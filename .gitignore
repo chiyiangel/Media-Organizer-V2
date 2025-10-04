@@ -1,0 +1,103 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+coverage.html
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Build directory (exclude build scripts)
+build/photo-organizer*
+dist/
+
+# But keep build scripts
+!build-all.bat
+!build-all.ps1
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Log files
+*.log
+organize_log_*.txt
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Configuration files (if they contain sensitive data)
+# config.yaml
+# config.json
+
+# Test data (optional - uncomment if you don't want to commit test files)
+# test_data/
+# testdata/
+
+# Local environment files
+.env
+.env.local
+
+# Release artifacts
+releases/
+
+# Documentation build output
+docs/_build/
+docs/.doctrees/
+
+# Profiling data
+*.prof
+mem.out
+cpu.out
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+organize_log_*.txt
+
+# 临时文件
+*.tmp
+temp/
+tmp/
+
+# 环境文件
+.env
+.env.local
