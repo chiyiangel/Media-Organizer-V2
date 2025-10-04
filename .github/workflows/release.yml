@@ -1,0 +1,162 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # 当推送 v* 标签时触发，例如 v1.0.0
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build binaries
+        run: |
+          mkdir -p build
+          
+          # Build for different platforms
+          PLATFORMS=(
+            "windows/amd64"
+            "linux/amd64" 
+            "linux/arm64"
+            "darwin/amd64"
+            "darwin/arm64"
+          )
+          
+          for platform in "${PLATFORMS[@]}"; do
+            GOOS=${platform%/*}
+            GOARCH=${platform#*/}
+            
+            if [ "$GOOS" = "windows" ]; then
+              EXT=".exe"
+            else
+              EXT=""
+            fi
+            
+            OUTPUT_NAME="photo-organizer-${GOOS}-${GOARCH}${EXT}"
+            
+            echo "Building $OUTPUT_NAME..."
+            GOOS=$GOOS GOARCH=$GOARCH go build \
+              -ldflags "-s -w -X main.Version=${{ steps.version.outputs.VERSION }}" \
+              -o build/$OUTPUT_NAME \
+              cmd/organizer/main.go
+          done
+
+      - name: Create checksums
+        run: |
+          cd build
+          sha256sum * > checksums.txt
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # 生成变更日志 (如果有上一个标签的话)
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+            echo "## Changes since $PREVIOUS_TAG" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+            echo "## Initial Release" >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "First release of Photo Video Organizer!" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          name: Release ${{ steps.version.outputs.VERSION }}
+          body: |
+            # 📸 Photo Video Organizer ${{ steps.version.outputs.VERSION }}
+            
+            ## 🚀 Download
+            
+            Choose the right binary for your platform:
+            
+            - **Windows**: `photo-organizer-windows-amd64.exe`
+            - **macOS (Intel)**: `photo-organizer-darwin-amd64`  
+            - **macOS (Apple Silicon)**: `photo-organizer-darwin-arm64`
+            - **Linux (x64)**: `photo-organizer-linux-amd64`
+            - **Linux (ARM64)**: `photo-organizer-linux-arm64`
+            
+            ## 📋 Installation
+            
+            ### Windows
+            ```cmd
+            # Download and run
+            photo-organizer-windows-amd64.exe
+            ```
+            
+            ### macOS/Linux  
+            ```bash
+            # Download, make executable, and run
+            chmod +x photo-organizer-*
+            ./photo-organizer-*
+            ```
+            
+            ## 🔒 Verification
+            
+            Verify your download using the provided `checksums.txt`:
+            
+            ```bash
+            # Linux/macOS
+            sha256sum -c checksums.txt
+            
+            # Windows (PowerShell)
+            Get-FileHash photo-organizer-windows-amd64.exe -Algorithm SHA256
+            ```
+            
+            ${{ steps.changelog.outputs.CHANGELOG }}
+            
+          files: |
+            build/photo-organizer-*
+            build/checksums.txt
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to Go Proxy (optional)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          # 触发 Go proxy 更新
+          curl -X POST "https://proxy.golang.org/github.com/chiyiangel/Media-Organizer-V2/@v/${{ steps.version.outputs.VERSION }}.info" || true
