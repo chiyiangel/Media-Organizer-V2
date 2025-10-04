@@ -18,7 +18,7 @@ $platforms = @(
 
 # Build for each platform
 foreach ($platform in $platforms) {
-    $filename = "photo-organizer-$($platform.OS)-$($platform.Arch)$($platform.Ext)"
+    $filename = "media-organizer-$($platform.OS)-$($platform.Arch)$($platform.Ext)"
     
     Write-Host "  $($platform.Icon) Building for $($platform.OS) ($($platform.Arch))..." -ForegroundColor Cyan
     
@@ -42,7 +42,7 @@ Write-Host "`n[DONE] Cross-platform builds complete!" -ForegroundColor Green
 
 # Show built files
 Write-Host "`nBuilt files:" -ForegroundColor Yellow
-Get-ChildItem "build/photo-organizer-*" | ForEach-Object {
+Get-ChildItem "build/media-organizer-*" | ForEach-Object {
     $size = [math]::Round($_.Length / 1MB, 2)
     Write-Host "  $($_.Name) ($size MB)" -ForegroundColor White
 }

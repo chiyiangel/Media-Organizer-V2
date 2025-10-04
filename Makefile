@@ -1,6 +1,6 @@
-# Photo Video Organizer - Build Configuration
+# Media Organizer - Build Configuration
 # Variables
-BINARY_NAME := photo-organizer
+BINARY_NAME := media-organizer
 BUILD_DIR := build
 MAIN_PATH := cmd/organizer/main.go
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")

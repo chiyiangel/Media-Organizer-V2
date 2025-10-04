@@ -1,4 +1,4 @@
-# 📸 Photo Video Organizer
+# 📸 Media Organizer
 
 <div align="center">
 
@@ -46,8 +46,8 @@
 ### Option 1: Download Binary (Recommended)
 ```bash
 # Download the latest release for your platform
-curl -L https://github.com/chiyiangel/Media-Organizer-V2/releases/latest/download/photo-organizer-linux-amd64 -o photo-organizer
-chmod +x photo-organizer
+curl -L https://github.com/chiyiangel/Media-Organizer-V2/releases/latest/download/media-organizer-linux-amd64 -o media-organizer
+chmod +x media-organizer
 ```
 
 ### Option 2: Build from Source
@@ -73,10 +73,10 @@ go install github.com/chiyiangel/Media-Organizer-V2/cmd/organizer@latest
 ### Quick Start
 ```bash
 # Launch the application
-./photo-organizer
+./media-organizer
 
 # On Windows
-photo-organizer.exe
+media-organizer.exe
 ```
 
 ### Interactive Interface

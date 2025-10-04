@@ -20,7 +20,7 @@ go.work
 go.work.sum
 
 # Build directory (exclude build scripts)
-build/photo-organizer*
+build/media-organizer*
 dist/
 
 # But keep build scripts
