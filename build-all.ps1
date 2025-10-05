@@ -25,7 +25,7 @@ foreach ($platform in $platforms) {
     $env:GOOS = $platform.OS
     $env:GOARCH = $platform.Arch
     
-    go build -ldflags "-s -w" -o "build/$filename" "cmd/organizer/main.go"
+    go build -ldflags "-s -w" -o "build/$filename" "./cmd/organizer"
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host "    [OK] Success: $filename" -ForegroundColor Green

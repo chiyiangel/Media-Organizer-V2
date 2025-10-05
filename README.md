@@ -35,8 +35,11 @@
 
 ### ⚙️ Flexible Configuration
 - **🔄 Duplicate Strategies**: Skip, overwrite, or rename duplicates
-- **� Comprehensive Logging**: Detailed operation logs with timestamps
-- **�️ Customizable**: Configurable source and destination directories
+- ** Comprehensive Logging**: Detailed operation logs with timestamps
+- **️ Customizable**: Configurable source and destination directories
+- **🤫 Silent Mode**: Non-interactive execution for automation
+- **📁 Configuration Files**: JSON-based configuration management
+- **🔧 CLI Parameters**: Command-line argument support
 
 ## 🚀 Installation
 
@@ -54,7 +57,7 @@ chmod +x media-organizer
 ```bash
 # Clone the repository
 git clone https://github.com/chiyiangel/Media-Organizer-V2.git
-cd photo-video-organizer
+cd Media-Organizer-V2
 
 # Download dependencies
 go mod download
@@ -100,6 +103,71 @@ The application provides an intuitive keyboard-driven interface:
 - `R` - Restart organization
 - `O` - Open destination folder
 - `Q` - Quit application
+
+### Silent Mode & CLI Usage
+
+For automated execution and scripting, the application supports silent mode operation:
+
+#### Command Line Options
+```bash
+# Core options
+-source string      Source directory path
+-target string      Target directory path
+-detection string   Duplicate detection strategy (filename, md5)
+-strategy string    Duplicate handling strategy (skip, overwrite, rename)
+
+# Silent mode options
+-mode string        Operation mode (interactive, silent)
+-silent             Enable silent mode (equivalent to --mode silent)
+-config string      Configuration file path
+-log-level string   Log level (debug, info, warning, error)
+
+# Information options
+-help               Show this help message
+-version            Show version information
+```
+
+#### Usage Examples
+```bash
+# Silent mode with CLI parameters
+./media-organizer -source ./photos -target ./organized -mode silent
+
+# Silent mode with configuration file
+./media-organizer -config config.json -silent
+
+# Using short flags
+./media-organizer -source ./photos -target ./organized -silent
+
+# Show help
+./media-organizer -help
+
+# Show version
+./media-organizer -version
+```
+
+#### Configuration File Support
+
+Create a JSON configuration file for repeated use:
+
+**config.json**
+```json
+{
+  "sourceDir": "./photos",
+  "targetDir": "./organized",
+  "duplicateDetection": "md5",
+  "duplicateStrategy": "rename",
+  "mode": "silent",
+  "logLevel": "info"
+}
+```
+
+Configuration precedence: **CLI arguments > Configuration file > Default values**
+
+#### Configuration File Locations
+The application searches for configuration files in these locations (in order):
+1. Current directory: `media-organizer.json`
+2. User config directory: `%APPDATA%\media-organizer\config.json` (Windows)
+3. Home directory: `~/.media-organizer.json`
 
 ### Supported File Types
 
@@ -260,7 +328,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Author**: Liu Jun
 - **Email**: chiyiangel@gmail.com
-- **GitHub**: [@yourusername](https://github.com/chiyiangel)
+- **GitHub**: [@chiyiangel](https://github.com/chiyiangel)
 - **Issues**: [GitHub Issues](https://github.com/chiyiangel/Media-Organizer-V2/issues)
 
 ---
