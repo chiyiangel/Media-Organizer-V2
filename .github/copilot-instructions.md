@@ -62,7 +62,7 @@ go test ./...   # Run all tests
 ## Module Dependencies
 - **Core TUI**: `github.com/charmbracelet/bubbletea` + `lipgloss` for styling
 - **EXIF**: `github.com/rwcarlsen/goexif` for photo metadata extraction
-- **Module path issue**: Current go.mod uses placeholder `github.com/yourusername/photo-video-organizer` - should be updated to actual repo path
+- **Module path issue**: Current go.mod uses placeholder `github.com/chiyiangel/media-organizer-v2` - should be updated to actual repo path
 
 ## Configuration & State Management
 

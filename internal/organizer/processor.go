@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/yourusername/photo-video-organizer/internal/config"
-	"github.com/yourusername/photo-video-organizer/internal/i18n"
+	"github.com/chiyiangel/media-organizer-v2/internal/config"
+	"github.com/chiyiangel/media-organizer-v2/internal/i18n"
 )
 
 // Processor 文件处理器

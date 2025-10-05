@@ -74,7 +74,7 @@ photo-video-organizer/
 ### go.mod 依赖项
 
 ```go
-module github.com/yourusername/photo-video-organizer
+module github.com/chiyiangel/media-organizer-v2
 
 go 1.21
 
@@ -228,8 +228,8 @@ package ui
 
 import (
     tea "github.com/charmbracelet/bubbletea"
-    "github.com/yourusername/photo-video-organizer/internal/config"
-    "github.com/yourusername/photo-video-organizer/internal/organizer"
+    "github.com/chiyiangel/media-organizer-v2/internal/config"
+    "github.com/chiyiangel/media-organizer-v2/internal/organizer"
 )
 
 // Screen 界面类型
@@ -760,7 +760,7 @@ import (
     "path/filepath"
     "time"
     
-    "github.com/yourusername/photo-video-organizer/internal/config"
+    "github.com/chiyiangel/media-organizer-v2/internal/config"
 )
 
 // Processor 文件处理器
@@ -924,7 +924,7 @@ import (
     "os"
     "path/filepath"
     
-    "github.com/yourusername/photo-video-organizer/internal/config"
+    "github.com/chiyiangel/media-organizer-v2/internal/config"
 )
 
 // DuplicateDetector 重复文件检测器

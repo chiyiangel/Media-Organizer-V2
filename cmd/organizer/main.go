@@ -5,8 +5,8 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/yourusername/photo-video-organizer/internal/i18n"
-	"github.com/yourusername/photo-video-organizer/internal/ui"
+	"github.com/chiyiangel/media-organizer-v2/internal/i18n"
+	"github.com/chiyiangel/media-organizer-v2/internal/ui"
 )
 
 func main() {

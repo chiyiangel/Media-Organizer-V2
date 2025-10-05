@@ -1,6 +1,6 @@
 package ui
 
-import "github.com/yourusername/photo-video-organizer/internal/organizer"
+import "github.com/chiyiangel/media-organizer-v2/internal/organizer"
 
 // FileScanCompleteMsg 文件扫描完成消息
 type FileScanCompleteMsg struct {

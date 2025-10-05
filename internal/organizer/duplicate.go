@@ -3,7 +3,7 @@ package organizer
 import (
 	"os"
 
-	"github.com/yourusername/photo-video-organizer/internal/config"
+	"github.com/chiyiangel/media-organizer-v2/internal/config"
 )
 
 // DuplicateDetector 重复文件检测器

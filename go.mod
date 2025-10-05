@@ -1,4 +1,4 @@
-module github.com/yourusername/photo-video-organizer
+module github.com/chiyiangel/media-organizer-v2
 
 go 1.24.0
 

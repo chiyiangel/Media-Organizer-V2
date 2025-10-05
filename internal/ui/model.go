@@ -7,9 +7,9 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/yourusername/photo-video-organizer/internal/config"
-	"github.com/yourusername/photo-video-organizer/internal/logger"
-	"github.com/yourusername/photo-video-organizer/internal/organizer"
+	"github.com/chiyiangel/media-organizer-v2/internal/config"
+	"github.com/chiyiangel/media-organizer-v2/internal/logger"
+	"github.com/chiyiangel/media-organizer-v2/internal/organizer"
 )
 
 // Screen 界面类型

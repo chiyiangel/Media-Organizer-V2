@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yourusername/photo-video-organizer/internal/config"
-	"github.com/yourusername/photo-video-organizer/internal/i18n"
+	"github.com/chiyiangel/media-organizer-v2/internal/config"
+	"github.com/chiyiangel/media-organizer-v2/internal/i18n"
 )
 
 // renderConfigScreen 渲染主配置界面

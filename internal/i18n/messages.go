@@ -5,8 +5,8 @@ func (l *Localizer) initMessages() {
 	l.messages = map[Language]map[string]string{
 		LanguageChinese: {
 			// 应用标题和基本信息
-			"app.title":   "📸 照片视频整理工具 v1.0",
-			"app.version": "v1.0",
+			"app.title":   "📸 照片视频整理工具 v0.0.1",
+			"app.version": "v0.0.1",
 
 			// 配置界面
 			"config.source_dir":         "📁 源目录: ",
@@ -73,8 +73,8 @@ func (l *Localizer) initMessages() {
 
 		LanguageEnglish: {
 			// Application title and basic info
-			"app.title":   "📸 Photo Video Organizer v1.0",
-			"app.version": "v1.0",
+			"app.title":   "📸 Media Organizer v0.0.1",
+			"app.version": "v0.0.1",
 
 			// Configuration screen
 			"config.source_dir":         "📁 Source Directory: ",

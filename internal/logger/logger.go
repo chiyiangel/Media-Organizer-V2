@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/yourusername/photo-video-organizer/internal/organizer"
+	"github.com/chiyiangel/media-organizer-v2/internal/organizer"
 )
 
 // Logger 日志记录器
