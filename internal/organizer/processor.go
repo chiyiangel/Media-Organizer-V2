@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/yourusername/photo-video-organizer/internal/config"
+	"github.com/yourusername/photo-video-organizer/internal/i18n"
 )
 
 // Processor 文件处理器
@@ -34,7 +35,7 @@ func (p *Processor) Process(file *FileInfo) (*ProcessRecord, error) {
 		return &ProcessRecord{
 			File:    file,
 			Result:  ResultFailed,
-			Message: fmt.Sprintf("无法提取日期: %v", err),
+			Message: i18n.Tf("error.extract_date", err.Error()),
 		}, err
 	}
 	file.Date = date
@@ -49,7 +50,7 @@ func (p *Processor) Process(file *FileInfo) (*ProcessRecord, error) {
 		return &ProcessRecord{
 			File:    file,
 			Result:  ResultFailed,
-			Message: fmt.Sprintf("检查重复失败: %v", err),
+			Message: i18n.Tf("error.check_duplicate", err.Error()),
 		}, err
 	}
 
@@ -59,7 +60,7 @@ func (p *Processor) Process(file *FileInfo) (*ProcessRecord, error) {
 			return &ProcessRecord{
 				File:    file,
 				Result:  ResultSkipped,
-				Message: "重复文件，已跳过",
+				Message: i18n.T("message.duplicate_skipped"),
 			}, nil
 
 		case config.StrategyOverwrite:
@@ -77,14 +78,14 @@ func (p *Processor) Process(file *FileInfo) (*ProcessRecord, error) {
 		return &ProcessRecord{
 			File:    file,
 			Result:  ResultFailed,
-			Message: fmt.Sprintf("复制文件失败: %v", err),
+			Message: i18n.Tf("error.copy_file", err.Error()),
 		}, err
 	}
 
 	return &ProcessRecord{
 		File:    file,
 		Result:  ResultSuccess,
-		Message: "成功",
+		Message: i18n.T("message.success"),
 	}, nil
 }
 

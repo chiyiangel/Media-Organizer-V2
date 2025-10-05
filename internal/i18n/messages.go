@@ -1,0 +1,137 @@
+package i18n
+
+// initMessages 初始化语言资源
+func (l *Localizer) initMessages() {
+	l.messages = map[Language]map[string]string{
+		LanguageChinese: {
+			// 应用标题和基本信息
+			"app.title":   "📸 照片视频整理工具 v1.0",
+			"app.version": "v1.0",
+
+			// 配置界面
+			"config.source_dir":         "📁 源目录: ",
+			"config.target_dir":         "📂 目标目录: ",
+			"config.not_set":            "未设置",
+			"config.edit_source_hint":   "           按 [S] 编辑路径",
+			"config.edit_target_hint":   "           按 [D] 编辑路径",
+			"config.organize_strategy":  "⚙️  整理策略:",
+			"config.file_detection":     "    同文件识别: [F] 文件名 {0}  [M] MD5哈希 {1}",
+			"config.duplicate_handling": "    重复处理:   [1] 跳过 {0}  [2] 覆盖 {1}  [3] 重命名 {2}",
+			"config.start_hint":         "按 [Enter] 开始整理  |  按 [Q/Esc] 退出程序",
+			"config.start_hint_wrapped": "按 [Enter] 开始整理\n按 [Q/Esc] 退出程序",
+
+			// 输入界面
+			"input.title":        "📝 编辑路径",
+			"input.prompt":       "请输入目录路径:",
+			"input.confirm_hint": "按 [Enter] 确认  |  按 [Esc] 取消",
+
+			// 进度界面
+			"progress.title":        "🔄 正在整理文件...",
+			"progress.current_file": "当前文件: ",
+			"progress.target_path":  "目标路径: ",
+			"progress.progress":     "进度: ",
+			"progress.statistics":   "📊 实时统计:",
+			"progress.scanned":      "    已扫描:  {0} 个文件",
+			"progress.processed":    "    已处理:  {0} 个文件",
+			"progress.photos":       "    ├─ 照片: {0} 张",
+			"progress.videos":       "    ├─ 视频: {0} 个",
+			"progress.skipped":      "    ├─ 跳过: {0} 个 (重复)",
+			"progress.errors":       "    └─ 错误: {0} 个",
+			"progress.cancel_hint":  "按 [C/Esc] 取消整理",
+
+			// 汇总界面
+			"summary.title":                "✅ 整理完成!",
+			"summary.report_title":         "📊 整理汇总报告",
+			"summary.file_statistics":      "文件统计:",
+			"summary.total_files":          "    总文件数:      {0} 个",
+			"summary.total_photos":         "    ├─ 照片:       {0} 张",
+			"summary.total_videos":         "    └─ 视频:       {0} 个",
+			"summary.process_results":      "处理结果:",
+			"summary.success":              "    ✓ 成功整理:    {0} 个",
+			"summary.skipped":              "    ⊘ 跳过(重复):  {0} 个",
+			"summary.failed":               "    ✗ 失败:        {0} 个",
+			"summary.performance":          "性能数据:",
+			"summary.duration":             "    耗时:          {0}",
+			"summary.speed":                "    处理速度:      {0} 文件/秒",
+			"summary.log_file":             "💾 详细日志: ",
+			"summary.actions_hint":         "按 [R] 重新整理  |  按 [O] 打开目标目录  |  按 [Q/Esc] 退出",
+			"summary.actions_hint_wrapped": "按 [R] 重新整理  |  按 [O] 打开目标目录\n按 [Q/Esc] 退出",
+
+			// 错误信息和消息
+			"error.prefix":              "错误: ",
+			"error.extract_date":        "无法提取日期: {0}",
+			"error.check_duplicate":     "检查重复失败: {0}",
+			"error.copy_file":           "复制文件失败: {0}",
+			"message.duplicate_skipped": "重复文件，已跳过",
+			"message.success":           "成功处理",
+
+			// 文件类型
+			"file.photo": "照片",
+			"file.video": "视频",
+			"file.other": "其他",
+		},
+
+		LanguageEnglish: {
+			// Application title and basic info
+			"app.title":   "📸 Photo Video Organizer v1.0",
+			"app.version": "v1.0",
+
+			// Configuration screen
+			"config.source_dir":         "📁 Source Directory: ",
+			"config.target_dir":         "📂 Target Directory: ",
+			"config.not_set":            "Not Set",
+			"config.edit_source_hint":   "           Press [S] to edit path",
+			"config.edit_target_hint":   "           Press [D] to edit path",
+			"config.organize_strategy":  "⚙️  Organization Strategy:",
+			"config.file_detection":     "    File Detection: [F] Filename {0}  [M] MD5 Hash {1}",
+			"config.duplicate_handling": "    Duplicate Action: [1] Skip {0}  [2] Overwrite {1}  [3] Rename {2}",
+			"config.start_hint":         "Press [Enter] to start  |  Press [Q/Esc] to quit",
+			"config.start_hint_wrapped": "Press [Enter] to start\nPress [Q/Esc] to quit",
+
+			// Input screen
+			"input.title":        "📝 Edit Path",
+			"input.prompt":       "Please enter directory path:",
+			"input.confirm_hint": "Press [Enter] to confirm  |  Press [Esc] to cancel",
+
+			// Progress screen
+			"progress.title":        "🔄 Organizing Files...",
+			"progress.current_file": "Current File: ",
+			"progress.target_path":  "Target Path: ",
+			"progress.progress":     "Progress: ",
+			"progress.statistics":   "📊 Real-time Statistics:",
+			"progress.scanned":      "    Scanned:   {0} files",
+			"progress.processed":    "    Processed: {0} files",
+			"progress.photos":       "    ├─ Photos: {0}",
+			"progress.videos":       "    ├─ Videos: {0}",
+			"progress.skipped":      "    ├─ Skipped: {0} (duplicates)",
+			"progress.errors":       "    └─ Errors: {0}",
+			"progress.cancel_hint":  "Press [C/Esc] to cancel",
+
+			// Summary screen
+			"summary.title":                "✅ Organization Complete!",
+			"summary.report_title":         "📊 Organization Summary Report",
+			"summary.file_statistics":      "File Statistics:",
+			"summary.total_files":          "    Total Files:       {0}",
+			"summary.total_photos":         "    ├─ Photos:        {0}",
+			"summary.total_videos":         "    └─ Videos:        {0}",
+			"summary.process_results":      "Processing Results:",
+			"summary.success":              "    ✓ Successfully organized: {0}",
+			"summary.skipped":              "    ⊘ Skipped (duplicates):  {0}",
+			"summary.failed":               "    ✗ Failed:                {0}",
+			"summary.performance":          "Performance Data:",
+			"summary.duration":             "    Duration:         {0}",
+			"summary.speed":                "    Processing Speed: {0} files/sec",
+			"summary.log_file":             "💾 Detailed Log: ",
+			"summary.actions_hint":         "Press [R] to restart  |  Press [O] to open folder  |  Press [Q/Esc] to quit",
+			"summary.actions_hint_wrapped": "Press [R] to restart  |  Press [O] to open folder\nPress [Q/Esc] to quit",
+
+			// Error messages
+			"error.prefix": "Error: ",
+
+			// File types
+			"file.photo": "Photo",
+			"file.video": "Video",
+			"file.other": "Other",
+		},
+	}
+}
