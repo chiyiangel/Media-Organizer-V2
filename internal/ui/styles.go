@@ -8,11 +8,11 @@ import (
 )
 
 var (
-	// 边框样式
+	// 边框样式 - 减少内边距避免布局冲突
 	borderStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("63")).
-			Padding(1, 2)
+			Padding(1, 1)
 
 	// 标题样式
 	titleStyle = lipgloss.NewStyle().

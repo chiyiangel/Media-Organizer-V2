@@ -70,9 +70,12 @@ func (m Model) renderConfigScreen() string {
 	b.WriteString(textStyle.Render(fmt.Sprintf("    重复处理:   [1] 跳过 %s  [2] 覆盖 %s  [3] 重命名 %s", strategy1, strategy2, strategy3)))
 	b.WriteString("\n\n")
 
-	// 分割线
-	b.WriteString(renderDivider(m.width - 4))
-	b.WriteString("\n\n")
+	// 分割线 - 调整宽度以匹配边框
+	dividerWidth := m.width - 8 // 考虑边框和内边距
+	if dividerWidth > 0 {
+		b.WriteString(renderDivider(dividerWidth))
+		b.WriteString("\n\n")
+	}
 
 	// 错误信息
 	if m.err != nil {
@@ -80,11 +83,22 @@ func (m Model) renderConfigScreen() string {
 		b.WriteString("\n\n")
 	}
 
-	// 提示
-	b.WriteString(hintStyle.Render("按 [Enter] 开始整理  |  按 [Q/Esc] 退出程序"))
+	// 提示 - 确保文字不超出容器宽度
+	hintText := "按 [Enter] 开始整理  |  按 [Q/Esc] 退出程序"
+	maxHintWidth := m.width - 8 // 考虑边框和内边距
+	if len(hintText) > maxHintWidth && maxHintWidth > 0 {
+		hintText = "按 [Enter] 开始整理\n按 [Q/Esc] 退出程序"
+	}
+	b.WriteString(hintStyle.Render(hintText))
 	b.WriteString("\n")
 
-	return borderStyle.Width(m.width - 2).Render(b.String())
+	// 确保容器宽度合理
+	containerWidth := m.width - 2
+	if containerWidth < 40 {
+		containerWidth = 40 // 最小宽度
+	}
+
+	return borderStyle.Width(containerWidth).Render(b.String())
 }
 
 // renderInputScreen 渲染路径输入界面
@@ -110,7 +124,13 @@ func (m Model) renderInputScreen() string {
 	b.WriteString(hintStyle.Render("按 [Enter] 确认  |  按 [Esc] 取消"))
 	b.WriteString("\n")
 
-	return borderStyle.Width(m.width - 2).Render(b.String())
+	// 确保容器宽度合理
+	containerWidth := m.width - 2
+	if containerWidth < 40 {
+		containerWidth = 40
+	}
+
+	return borderStyle.Width(containerWidth).Render(b.String())
 }
 
 // renderProgressScreen 渲染整理进度界面
@@ -141,9 +161,12 @@ func (m Model) renderProgressScreen() string {
 	b.WriteString(renderProgressBar(m.statistics.ProcessedFiles, m.statistics.TotalFiles, progressBarWidth))
 	b.WriteString("\n\n")
 
-	// 分割线
-	b.WriteString(renderDivider(m.width - 4))
-	b.WriteString("\n\n")
+	// 分割线 - 统一宽度计算
+	dividerWidth := m.width - 8
+	if dividerWidth > 0 {
+		b.WriteString(renderDivider(dividerWidth))
+		b.WriteString("\n\n")
+	}
 
 	// 实时统计
 	b.WriteString(labelStyle.Render("📊 实时统计:"))
@@ -157,14 +180,22 @@ func (m Model) renderProgressScreen() string {
 	b.WriteString("\n")
 
 	// 分割线
-	b.WriteString(renderDivider(m.width - 4))
-	b.WriteString("\n\n")
+	if dividerWidth > 0 {
+		b.WriteString(renderDivider(dividerWidth))
+		b.WriteString("\n\n")
+	}
 
 	// 提示
 	b.WriteString(hintStyle.Render("按 [C/Esc] 取消整理"))
 	b.WriteString("\n")
 
-	return borderStyle.Width(m.width - 2).Render(b.String())
+	// 确保容器宽度合理
+	containerWidth := m.width - 2
+	if containerWidth < 40 {
+		containerWidth = 40
+	}
+
+	return borderStyle.Width(containerWidth).Render(b.String())
 }
 
 // renderSummaryScreen 渲染完成汇总界面
@@ -210,13 +241,27 @@ func (m Model) renderSummaryScreen() string {
 	b.WriteString(textStyle.Render(m.logFilePath))
 	b.WriteString("\n\n")
 
-	// 分割线
-	b.WriteString(renderDivider(m.width - 4))
-	b.WriteString("\n\n")
+	// 分割线 - 统一宽度计算
+	dividerWidth := m.width - 8
+	if dividerWidth > 0 {
+		b.WriteString(renderDivider(dividerWidth))
+		b.WriteString("\n\n")
+	}
 
-	// 提示
-	b.WriteString(hintStyle.Render("按 [R] 重新整理  |  按 [O] 打开目标目录  |  按 [Q/Esc] 退出"))
+	// 提示 - 考虑终端宽度自动换行
+	hintText := "按 [R] 重新整理  |  按 [O] 打开目标目录  |  按 [Q/Esc] 退出"
+	maxHintWidth := m.width - 8
+	if len(hintText) > maxHintWidth && maxHintWidth > 0 {
+		hintText = "按 [R] 重新整理  |  按 [O] 打开目标目录\n按 [Q/Esc] 退出"
+	}
+	b.WriteString(hintStyle.Render(hintText))
 	b.WriteString("\n")
 
-	return borderStyle.Width(m.width - 2).Render(b.String())
+	// 确保容器宽度合理
+	containerWidth := m.width - 2
+	if containerWidth < 40 {
+		containerWidth = 40
+	}
+
+	return borderStyle.Width(containerWidth).Render(b.String())
 }
