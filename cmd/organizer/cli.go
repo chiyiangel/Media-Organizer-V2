@@ -83,7 +83,7 @@ func (p *CLIParser) validate() error {
 	// Validate operation mode if specified
 	if p.config.Mode != "" && p.config.Mode != config.ModeInteractive && p.config.Mode != config.ModeSilent {
 		errorMsg := i18n.Tf("cli.error.invalid_mode", p.config.Mode)
-		return fmt.Errorf(errorMsg)
+		return fmt.Errorf("%s", errorMsg)
 	}
 
 	// Validate duplicate detection if specified
@@ -91,7 +91,7 @@ func (p *CLIParser) validate() error {
 		p.config.DuplicateDetection != config.DetectionFilename &&
 		p.config.DuplicateDetection != config.DetectionMD5 {
 		errorMsg := i18n.Tf("cli.error.invalid_detection", p.config.DuplicateDetection)
-		return fmt.Errorf(errorMsg)
+		return fmt.Errorf("%s", errorMsg)
 	}
 
 	// Validate duplicate strategy if specified
@@ -100,7 +100,7 @@ func (p *CLIParser) validate() error {
 		p.config.DuplicateStrategy != config.StrategyOverwrite &&
 		p.config.DuplicateStrategy != config.StrategyRename {
 		errorMsg := i18n.Tf("cli.error.invalid_strategy", p.config.DuplicateStrategy)
-		return fmt.Errorf(errorMsg)
+		return fmt.Errorf("%s", errorMsg)
 	}
 
 	// Validate log level if specified
@@ -113,7 +113,7 @@ func (p *CLIParser) validate() error {
 		}
 		if !validLogLevels[p.config.LogLevel] {
 			errorMsg := i18n.Tf("cli.error.invalid_log_level", p.config.LogLevel)
-			return fmt.Errorf(errorMsg)
+			return fmt.Errorf("%s", errorMsg)
 		}
 	}
 
