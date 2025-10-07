@@ -82,14 +82,16 @@ func (p *CLIParser) Parse(args []string) (*config.Config, error) {
 func (p *CLIParser) validate() error {
 	// Validate operation mode if specified
 	if p.config.Mode != "" && p.config.Mode != config.ModeInteractive && p.config.Mode != config.ModeSilent {
-		return fmt.Errorf(i18n.Tf("cli.error.invalid_mode", p.config.Mode))
+		errorMsg := i18n.Tf("cli.error.invalid_mode", p.config.Mode)
+		return fmt.Errorf(errorMsg)
 	}
 
 	// Validate duplicate detection if specified
 	if p.config.DuplicateDetection != "" &&
 		p.config.DuplicateDetection != config.DetectionFilename &&
 		p.config.DuplicateDetection != config.DetectionMD5 {
-		return fmt.Errorf(i18n.Tf("cli.error.invalid_detection", p.config.DuplicateDetection))
+		errorMsg := i18n.Tf("cli.error.invalid_detection", p.config.DuplicateDetection)
+		return fmt.Errorf(errorMsg)
 	}
 
 	// Validate duplicate strategy if specified
@@ -97,7 +99,8 @@ func (p *CLIParser) validate() error {
 		p.config.DuplicateStrategy != config.StrategySkip &&
 		p.config.DuplicateStrategy != config.StrategyOverwrite &&
 		p.config.DuplicateStrategy != config.StrategyRename {
-		return fmt.Errorf(i18n.Tf("cli.error.invalid_strategy", p.config.DuplicateStrategy))
+		errorMsg := i18n.Tf("cli.error.invalid_strategy", p.config.DuplicateStrategy)
+		return fmt.Errorf(errorMsg)
 	}
 
 	// Validate log level if specified
@@ -109,7 +112,8 @@ func (p *CLIParser) validate() error {
 			"error":   true,
 		}
 		if !validLogLevels[p.config.LogLevel] {
-			return fmt.Errorf(i18n.Tf("cli.error.invalid_log_level", p.config.LogLevel))
+			errorMsg := i18n.Tf("cli.error.invalid_log_level", p.config.LogLevel)
+			return fmt.Errorf(errorMsg)
 		}
 	}
 
@@ -118,7 +122,8 @@ func (p *CLIParser) validate() error {
 
 // ShowHelp displays usage information
 func (p *CLIParser) ShowHelp() {
-	fmt.Printf(i18n.Tf("cli.help.title", getVersion()) + "\n\n")
+	titleMsg := i18n.Tf("cli.help.title", getVersion()) + "\n\n"
+	fmt.Print(titleMsg)
 	fmt.Println(i18n.T("cli.help.usage"))
 	fmt.Println()
 	fmt.Println(i18n.T("cli.options.core"))
@@ -145,7 +150,8 @@ func (p *CLIParser) ShowHelp() {
 
 // ShowVersion displays version information
 func (p *CLIParser) ShowVersion() {
-	fmt.Printf(i18n.Tf("cli.version", getVersion()) + "\n")
+	versionMsg := i18n.Tf("cli.version", getVersion()) + "\n"
+	fmt.Print(versionMsg)
 }
 
 // getVersion returns the application version

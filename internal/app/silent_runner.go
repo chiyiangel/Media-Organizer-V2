@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/chiyiangel/media-organizer-v2/internal/config"
+	"github.com/chiyiangel/media-organizer-v2/internal/i18n"
 	"github.com/chiyiangel/media-organizer-v2/internal/logger"
 	"github.com/chiyiangel/media-organizer-v2/internal/organizer"
 )
@@ -39,11 +40,11 @@ func NewSilentRunner(config *config.Config) (*SilentRunner, error) {
 
 // Run executes the media organization in silent mode
 func (r *SilentRunner) Run() error {
-	fmt.Println("开始静默模式媒体整理")
-	fmt.Printf("源目录: %s\n", r.config.SourceDir)
-	fmt.Printf("目标目录: %s\n", r.config.TargetDir)
-	fmt.Printf("重复识别策略: %s\n", r.config.DuplicateDetection)
-	fmt.Printf("重复处理策略: %s\n", r.config.DuplicateStrategy)
+	fmt.Println(i18n.T("silent.start"))
+	fmt.Println(i18n.Tf("silent.source_dir", r.config.SourceDir))
+	fmt.Println(i18n.Tf("silent.target_dir", r.config.TargetDir))
+	fmt.Println(i18n.Tf("silent.duplicate_detection", r.config.DuplicateDetection))
+	fmt.Println(i18n.Tf("silent.duplicate_strategy", r.config.DuplicateStrategy))
 	fmt.Println()
 
 	// Set up interrupt handling
@@ -51,21 +52,22 @@ func (r *SilentRunner) Run() error {
 
 	// Start processing
 	startTime := time.Now()
-	fmt.Println("开始扫描文件...")
+	fmt.Println(i18n.T("silent.scan_start"))
 
 	// Create scanner and scan files
 	scanner := organizer.NewScanner(r.config.SourceDir)
 	files, err := scanner.Scan()
 	if err != nil {
-		return fmt.Errorf("文件扫描失败: %w", err)
+		errorMsg := i18n.Tf("silent.scan_failed", err.Error())
+		return fmt.Errorf(errorMsg)
 	}
 
 	if len(files) == 0 {
-		fmt.Println("未找到支持的媒体文件")
+		fmt.Println(i18n.T("silent.no_media_files"))
 		return nil
 	}
 
-	fmt.Printf("找到 %d 个媒体文件，开始处理...\n", len(files))
+	fmt.Println(i18n.Tf("silent.files_found", len(files)))
 
 	// Initialize statistics
 	stats := &organizer.Statistics{
@@ -91,7 +93,7 @@ func (r *SilentRunner) Run() error {
 		// Process the file
 		record, err := r.processor.Process(file)
 		if err != nil {
-			r.logger.LogError(fmt.Sprintf("处理文件失败: %s, 错误: %v", file.Path, err))
+			r.logger.LogError(i18n.Tf("silent.process_file_failed", file.Path, err))
 		}
 
 		if record != nil {
@@ -105,7 +107,7 @@ func (r *SilentRunner) Run() error {
 				stats.SkippedCount++
 			case organizer.ResultFailed:
 				stats.FailedCount++
-				r.logger.LogError(fmt.Sprintf("文件处理失败: %s, 原因: %s", file.Path, record.Message))
+				r.logger.LogError(i18n.Tf("silent.file_process_failed", file.Path, record.Message))
 			}
 		}
 
@@ -132,8 +134,8 @@ func (r *SilentRunner) Run() error {
 	r.printSummary(stats)
 
 	elapsed := time.Since(startTime)
-	fmt.Printf("处理完成，耗时: %v\n", elapsed)
-	fmt.Printf("详细日志已保存到: %s\n", r.logger.GetPath())
+	fmt.Println(i18n.Tf("silent.completed", elapsed))
+	fmt.Println(i18n.Tf("silent.log_saved", r.logger.GetPath()))
 
 	// Log statistics to file
 	r.logger.LogStatistics(stats)
@@ -152,27 +154,28 @@ func (r *SilentRunner) printProgress(stats *organizer.Statistics) {
 
 	percentage := float64(stats.ProcessedFiles) / float64(stats.TotalFiles) * 100
 	successful := stats.ProcessedFiles - stats.SkippedCount - stats.FailedCount
-	fmt.Printf("\r进度: %d/%d (%.1f%%) | 成功: %d | 失败: %d | 跳过: %d",
-		stats.ProcessedFiles, stats.TotalFiles, percentage,
+	progressMsg := i18n.Tf("silent.progress",
+		stats.ProcessedFiles, stats.TotalFiles, fmt.Sprintf("%.1f", percentage),
 		successful, stats.FailedCount, stats.SkippedCount)
+	fmt.Print("\r" + progressMsg)
 }
 
 // printSummary displays final summary
 func (r *SilentRunner) printSummary(stats *organizer.Statistics) {
-	fmt.Println("\n")
-	fmt.Println("=== 处理摘要 ===")
-	fmt.Printf("总文件数: %d\n", stats.TotalFiles)
-	fmt.Printf("照片数量: %d\n", stats.PhotoCount)
-	fmt.Printf("视频数量: %d\n", stats.VideoCount)
-	fmt.Printf("成功处理: %d\n", stats.ProcessedFiles-stats.SkippedCount-stats.FailedCount)
-	fmt.Printf("处理失败: %d\n", stats.FailedCount)
-	fmt.Printf("跳过文件: %d\n", stats.SkippedCount)
+	fmt.Println()
+	fmt.Println(i18n.T("silent.summary_title"))
+	fmt.Println(i18n.Tf("silent.total_files", stats.TotalFiles))
+	fmt.Println(i18n.Tf("silent.photo_count", stats.PhotoCount))
+	fmt.Println(i18n.Tf("silent.video_count", stats.VideoCount))
+	fmt.Println(i18n.Tf("silent.success_count", stats.ProcessedFiles-stats.SkippedCount-stats.FailedCount))
+	fmt.Println(i18n.Tf("silent.failed_count", stats.FailedCount))
+	fmt.Println(i18n.Tf("silent.skipped_count", stats.SkippedCount))
 
 	if stats.FailedCount > 0 {
-		fmt.Println("\n注意: 有文件处理失败，请查看日志文件了解详情")
+		fmt.Println("\n" + i18n.T("silent.failed_notice"))
 	}
 
-	fmt.Printf("\n重复文件处理策略: %s\n", r.config.DuplicateStrategy)
+	fmt.Println("\n" + i18n.Tf("silent.strategy_used", string(r.config.DuplicateStrategy)))
 }
 
 // handleInterrupt sets up graceful interrupt handling
@@ -182,7 +185,7 @@ func (r *SilentRunner) handleInterrupt() {
 
 	go func() {
 		<-c
-		fmt.Println("\n\n接收到中断信号，正在停止...")
+		fmt.Println("\n\n" + i18n.T("silent.interrupt_received"))
 		// TODO: Implement proper stop mechanism when processor supports it
 		os.Exit(1)
 	}()

@@ -36,13 +36,13 @@ func TestTranslation(t *testing.T) {
 
 	// 测试中文翻译
 	l.SetLanguage(LanguageChinese)
-	if l.T("app.title") != "📸 照片视频整理工具 v1.0" {
+	if l.T("app.title") != "📸 照片视频整理工具 v0.0.1" {
 		t.Errorf("Chinese translation failed")
 	}
 
 	// 测试英文翻译
 	l.SetLanguage(LanguageEnglish)
-	if l.T("app.title") != "📸 Photo Video Organizer v1.0" {
+	if l.T("app.title") != "📸 Media Organizer v0.0.1" {
 		t.Errorf("English translation failed")
 	}
 

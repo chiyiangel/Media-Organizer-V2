@@ -15,20 +15,23 @@ func main() {
 	// Parse CLI arguments first
 	cliConfig, err := ParseCLI()
 	if err != nil {
-		fmt.Printf(i18n.Tf("cli.error.cli_parse", err) + "\n")
+		errorMsg := i18n.Tf("cli.error.cli_parse", err) + "\n"
+		fmt.Print(errorMsg)
 		os.Exit(1)
 	}
 
 	// Load full configuration with precedence: CLI > File > Defaults
 	finalConfig, err := config.LoadFullConfig(cliConfig)
 	if err != nil {
-		fmt.Printf(i18n.Tf("cli.error.config_load", err) + "\n")
+		errorMsg := i18n.Tf("cli.error.config_load", err) + "\n"
+		fmt.Print(errorMsg)
 		os.Exit(1)
 	}
 
 	// Validate configuration
 	if err := finalConfig.Validate(); err != nil {
-		fmt.Printf(i18n.Tf("cli.error.config_validate", err) + "\n")
+		errorMsg := i18n.Tf("cli.error.config_validate", err) + "\n"
+		fmt.Print(errorMsg)
 		os.Exit(1)
 	}
 
@@ -48,13 +51,15 @@ func runSilentMode(config *config.Config) {
 	// Create silent runner
 	runner, err := app.NewSilentRunner(config)
 	if err != nil {
-		fmt.Printf(i18n.Tf("cli.error.silent_runner", err) + "\n")
+		errorMsg := i18n.Tf("cli.error.silent_runner", err) + "\n"
+		fmt.Print(errorMsg)
 		os.Exit(1)
 	}
 
 	// Execute in silent mode
 	if err := runner.Run(); err != nil {
-		fmt.Printf(i18n.Tf("cli.error.silent_exec", err) + "\n")
+		errorMsg := i18n.Tf("cli.error.silent_exec", err) + "\n"
+		fmt.Print(errorMsg)
 		os.Exit(1)
 	}
 }
@@ -72,7 +77,8 @@ func runInteractiveMode(config *config.Config) {
 
 	// 运行程序
 	if _, err := p.Run(); err != nil {
-		fmt.Printf(i18n.T("error.prefix")+"%v\n", err)
+		errorMsg := i18n.T("error.prefix") + fmt.Sprintf("%v\n", err)
+		fmt.Print(errorMsg)
 		os.Exit(1)
 	}
 }
