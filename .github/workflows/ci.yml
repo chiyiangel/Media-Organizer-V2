@@ -69,8 +69,25 @@ jobs:
 
       - name: Build application
         run: |
-          go build -v -o photo-organizer cmd/organizer/main.go
+          VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "dev")
+          go build -v -ldflags "-s -w -X main.Version=$VERSION" -o media-organizer ./cmd/organizer
 
       - name: Test build output
         run: |
-          ./photo-organizer --help || echo "Binary created successfully"
+          ./media-organizer --help || echo "Binary created successfully"
+
+      - name: Test cross-compilation
+        run: |
+          echo "Testing cross-compilation for multiple platforms..."
+          VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "dev")
+          
+          # Test Windows build
+          GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X main.Version=$VERSION" -o media-organizer-windows-amd64.exe ./cmd/organizer
+          
+          # Test macOS build
+          GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w -X main.Version=$VERSION" -o media-organizer-darwin-amd64 ./cmd/organizer
+          
+          # Test Linux ARM64 build  
+          GOOS=linux GOARCH=arm64 go build -ldflags "-s -w -X main.Version=$VERSION" -o media-organizer-linux-arm64 ./cmd/organizer
+          
+          echo "Cross-compilation test successful"
