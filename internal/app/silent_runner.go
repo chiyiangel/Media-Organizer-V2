@@ -59,7 +59,7 @@ func (r *SilentRunner) Run() error {
 	files, err := scanner.Scan()
 	if err != nil {
 		errorMsg := i18n.Tf("silent.scan_failed", err.Error())
-		return fmt.Errorf(errorMsg)
+		return fmt.Errorf("%s", errorMsg)
 	}
 
 	if len(files) == 0 {
