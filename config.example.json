@@ -1,0 +1,8 @@
+{
+  "sourceDir": "./photos",
+  "targetDir": "./organized",
+  "duplicateDetection": "md5",
+  "duplicateStrategy": "rename",
+  "mode": "silent",
+  "logLevel": "info"
+}
