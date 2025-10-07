@@ -2,7 +2,7 @@
 # Variables
 BINARY_NAME := media-organizer
 BUILD_DIR := build
-MAIN_PATH := cmd/organizer/main.go
+MAIN_PATH := ./cmd/organizer
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 LDFLAGS := -ldflags "-s -w -X main.Version=$(VERSION)"
 
