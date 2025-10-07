@@ -1,16 +1,21 @@
 # AI Copilot Instructions for Photo Video Organizer
 
 ## Project Overview
-This is a **Go 1.21+ Terminal UI application** that organizes photos/videos by date using EXIF metadata. The app uses **Bubble Tea** for interactive TUI with multi-screen navigation and real-time progress tracking.
+This is a **Go 1.21+ Terminal UI application** that organizes media files (photos/videos) by date using EXIF metadata. The app uses **Bubble Tea** for interactive TUI with multi-screen navigation and real-time progress tracking, plus a **silent mode** for automated processing.
+
+**Development Environment**: Primarily **Windows + PowerShell** - use PowerShell syntax for all command examples.
 
 ## Architecture & Code Organization
 
 ### Core Package Structure
 ```
-cmd/organizer/          # Entry point with Bubble Tea setup
+cmd/organizer/          # Entry point with CLI parsing and Bubble Tea setup
 internal/organizer/     # Business logic (processor, scanner, duplicate detection)  
 internal/ui/           # Bubble Tea models and screens
 internal/config/       # Configuration types and validation
+internal/app/          # Silent mode runner for non-interactive execution
+internal/i18n/         # Internationalization system (Chinese/English)
+internal/logger/       # Structured logging system
 ```
 
 ### Key Data Flow
@@ -42,10 +47,10 @@ Functions return `(*ProcessRecord, error)` - the record contains user-friendly m
 ## Build & Development
 
 ### Cross-Platform Building
-```bash
-# Multi-platform builds via PowerShell script or Makefile
-make build-all          # Uses Makefile with GOOS/GOARCH detection
-.\build-all.ps1         # PowerShell equivalent for Windows
+```powershell
+# Multi-platform builds via PowerShell script
+.\build-all.ps1         # PowerShell cross-platform build script
+# Or use Makefile in WSL/Linux environments if available
 ```
 
 ### Testing Patterns
@@ -53,10 +58,12 @@ make build-all          # Uses Makefile with GOOS/GOARCH detection
 - Test structure: table-driven tests with `name`, `input`, `expected` fields
 
 ### Key Build Commands
-```bash
-make build      # Single platform build with version from git tags
-make run        # Build and execute  
-go test ./...   # Run all tests
+```powershell
+# Build and run commands
+go build -o build/media-organizer.exe ./cmd/organizer  # Build for Windows
+go test ./...                                         # Run all tests
+.\build\media-organizer.exe                           # Execute built binary
+.\build-all.ps1                                       # Cross-platform builds
 ```
 
 ## Module Dependencies
@@ -64,27 +71,57 @@ go test ./...   # Run all tests
 - **EXIF**: `github.com/rwcarlsen/goexif` for photo metadata extraction
 - **Module path issue**: Current go.mod uses placeholder `github.com/chiyiangel/media-organizer-v2` - should be updated to actual repo path
 
-## Configuration & State Management
 
-### Config Structure (`internal/config/config.go`)
-```go
-type Config struct {
-    SourceDir          string
-    TargetDir          string  
-    DuplicateDetection DuplicateDetection  // "filename" | "md5"
-    DuplicateStrategy  DuplicateStrategy   // "skip" | "overwrite" | "rename"
-}
+
+## Current Project Status
+
+### Recent Developments
+- ✅ **GitHub Actions CI/CD**: Complete release workflow with multi-platform builds
+- ✅ **Internationalization (i18n)**: Full Chinese/English support with OS language auto-detection
+- ✅ **Silent Mode**: Non-interactive execution mode for automated processing
+- ✅ **Cross-platform Builds**: Windows/Linux/macOS support via Makefile and PowerShell scripts
+- ✅ **Error Handling**: Proper format string handling for Go static analysis compliance
+
+### Build System
+- **PowerShell Script**: `build-all.ps1` for Windows-native multi-platform builds
+- **Makefile**: Cross-platform build system with `MAIN_PATH := ./cmd/organizer`
+- **Binary Name**: `media-organizer` (consistent across all build configurations)
+- **GitHub Actions**: Automated testing and release creation on tag push
+
+### Development Workflow
+```powershell
+# Development commands (Windows PowerShell)
+go mod download; go mod tidy; go mod verify    # Install and verify dependencies
+go fmt ./...                                   # Format code  
+go test -v -race -coverprofile=coverage.out ./... # Run tests with race detection
+go build -o build/media-organizer.exe ./cmd/organizer  # Build for current platform
+.\build\media-organizer.exe                    # Execute built binary
+.\build-all.ps1                                # Cross-platform builds
 ```
 
-### UI State (`internal/ui/model.go`)
-The main model tracks: current screen, config, input state, organizing progress, statistics, and file records. State transitions are message-driven following Bubble Tea patterns.
+### Important Notes
+- **PowerShell Priority**: Always use PowerShell syntax for command examples
+- **Package Compilation**: Use `./cmd/organizer` not `cmd/organizer/main.go` to avoid `ParseCLI undefined` errors
+- **i18n System**: All user-facing text supports Chinese/English via `internal/i18n` package
+- **Format Strings**: Use `fmt.Errorf("%s", errorMsg)` pattern for i18n strings to satisfy Go static analyzer
 
-## File Processing Pipeline
+## Key Features
 
-1. **Scanning**: Recursively find files, classify by extension into `FileType`
-2. **Metadata**: Extract date from EXIF (photos) or file timestamps (videos)  
-3. **Path Generation**: Create `YYYY/MM/MM-DD` structure based on extracted date
-4. **Duplicate Check**: Compare by filename or MD5 hash based on config
-5. **Processing**: Copy/move files with progress tracking and error recording
+### Internationalization (i18n)
+- **Auto Language Detection**: Detects OS language (Chinese/English) via environment variables
+- **Translation System**: `internal/i18n` package with `T()` and `Tf()` functions
+- **UI Support**: Both Bubble Tea interface and silent mode fully localized
+- **Usage Pattern**: `i18n.T("key")` for simple strings, `i18n.Tf("key", params...)` with placeholders
 
-When adding features, maintain this pipeline structure and ensure proper error propagation through `ProcessRecord` objects.
+### Silent Mode (`internal/app/silent_runner.go`)
+- **Non-interactive Processing**: Command-line execution without TUI
+- **Progress Display**: Real-time progress updates with file statistics
+- **Error Logging**: Structured logging to files with configurable levels
+- **Configuration**: Uses same `Config` structure as interactive mode
+
+### Build Configuration
+- **PowerShell Script**: `build-all.ps1` for Windows-native multi-platform builds
+- **Makefile**: Available for WSL/Linux environments  
+- **GitHub Actions**: Automated CI/CD with cross-platform testing and releases
+- **Binary Naming**: Consistent `media-organizer` prefix across all platforms
+- **Version Embedding**: Git-based version injection during build process
