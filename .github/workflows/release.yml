@@ -65,13 +65,13 @@ jobs:
               EXT=""
             fi
             
-            OUTPUT_NAME="photo-organizer-${GOOS}-${GOARCH}${EXT}"
+            OUTPUT_NAME="media-organizer-${GOOS}-${GOARCH}${EXT}"
             
             echo "Building $OUTPUT_NAME..."
             GOOS=$GOOS GOARCH=$GOARCH go build \
               -ldflags "-s -w -X main.Version=${{ steps.version.outputs.VERSION }}" \
               -o build/$OUTPUT_NAME \
-              cmd/organizer/main.go
+              ./cmd/organizer
           done
 
       - name: Create checksums
@@ -105,31 +105,31 @@ jobs:
           tag_name: ${{ steps.version.outputs.VERSION }}
           name: Release ${{ steps.version.outputs.VERSION }}
           body: |
-            # 📸 Photo Video Organizer ${{ steps.version.outputs.VERSION }}
+            # 📸 Media Organizer ${{ steps.version.outputs.VERSION }}
             
             ## 🚀 Download
             
             Choose the right binary for your platform:
             
-            - **Windows**: `photo-organizer-windows-amd64.exe`
-            - **macOS (Intel)**: `photo-organizer-darwin-amd64`  
-            - **macOS (Apple Silicon)**: `photo-organizer-darwin-arm64`
-            - **Linux (x64)**: `photo-organizer-linux-amd64`
-            - **Linux (ARM64)**: `photo-organizer-linux-arm64`
+            - **Windows**: `media-organizer-windows-amd64.exe`
+            - **macOS (Intel)**: `media-organizer-darwin-amd64`  
+            - **macOS (Apple Silicon)**: `media-organizer-darwin-arm64`
+            - **Linux (x64)**: `media-organizer-linux-amd64`
+            - **Linux (ARM64)**: `media-organizer-linux-arm64`
             
             ## 📋 Installation
             
             ### Windows
             ```cmd
             # Download and run
-            photo-organizer-windows-amd64.exe
+            media-organizer-windows-amd64.exe
             ```
             
             ### macOS/Linux  
             ```bash
             # Download, make executable, and run
-            chmod +x photo-organizer-*
-            ./photo-organizer-*
+            chmod +x media-organizer-*
+            ./media-organizer-*
             ```
             
             ## 🔒 Verification
@@ -141,13 +141,13 @@ jobs:
             sha256sum -c checksums.txt
             
             # Windows (PowerShell)
-            Get-FileHash photo-organizer-windows-amd64.exe -Algorithm SHA256
+            Get-FileHash media-organizer-windows-amd64.exe -Algorithm SHA256
             ```
             
             ${{ steps.changelog.outputs.CHANGELOG }}
             
           files: |
-            build/photo-organizer-*
+            build/media-organizer-*
             build/checksums.txt
           draft: false
           prerelease: false
