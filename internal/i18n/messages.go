@@ -125,8 +125,13 @@ func (l *Localizer) initMessages() {
 			"summary.actions_hint":         "Press [R] to restart  |  Press [O] to open folder  |  Press [Q/Esc] to quit",
 			"summary.actions_hint_wrapped": "Press [R] to restart  |  Press [O] to open folder\nPress [Q/Esc] to quit",
 
-			// Error messages
-			"error.prefix": "Error: ",
+			// Error messages and processing messages
+			"error.prefix":              "Error: ",
+			"error.extract_date":        "Failed to extract date: {0}",
+			"error.check_duplicate":     "Failed to check duplicate: {0}",
+			"error.copy_file":           "Failed to copy file: {0}",
+			"message.duplicate_skipped": "Duplicate file skipped",
+			"message.success":           "Successfully processed",
 
 			// File types
 			"file.photo": "Photo",

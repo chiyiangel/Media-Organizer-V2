@@ -51,26 +51,81 @@ func (r *SilentRunner) Run() error {
 
 	// Start processing
 	startTime := time.Now()
+	fmt.Println("开始扫描文件...")
 
-	// For now, we'll use a simple approach since the processor doesn't have progress channels
-	// In a real implementation, we would need to add progress reporting to the processor
-	fmt.Println("开始处理文件...")
+	// Create scanner and scan files
+	scanner := organizer.NewScanner(r.config.SourceDir)
+	files, err := scanner.Scan()
+	if err != nil {
+		return fmt.Errorf("文件扫描失败: %w", err)
+	}
 
-	// TODO: Implement actual processing with progress reporting
-	// For now, we'll simulate processing
-	time.Sleep(2 * time.Second)
+	if len(files) == 0 {
+		fmt.Println("未找到支持的媒体文件")
+		return nil
+	}
 
-	// Simulate completion
+	fmt.Printf("找到 %d 个媒体文件，开始处理...\n", len(files))
+
+	// Initialize statistics
 	stats := &organizer.Statistics{
-		TotalFiles:     100,
-		ProcessedFiles: 100,
-		PhotoCount:     80,
-		VideoCount:     20,
-		SkippedCount:   5,
-		FailedCount:    2,
+		TotalFiles:     len(files),
+		ProcessedFiles: 0,
+		PhotoCount:     0,
+		VideoCount:     0,
+		SkippedCount:   0,
+		FailedCount:    0,
 		StartTime:      startTime,
-		EndTime:        time.Now(),
-		Duration:       time.Since(startTime),
+	}
+
+	// Process each file
+	var records []organizer.ProcessRecord
+	for i, file := range files {
+		// Update statistics based on file type
+		if file.Type == organizer.FileTypePhoto {
+			stats.PhotoCount++
+		} else if file.Type == organizer.FileTypeVideo {
+			stats.VideoCount++
+		}
+
+		// Process the file
+		record, err := r.processor.Process(file)
+		if err != nil {
+			r.logger.LogError(fmt.Sprintf("处理文件失败: %s, 错误: %v", file.Path, err))
+		}
+
+		if record != nil {
+			records = append(records, *record)
+
+			// Update statistics based on result
+			switch record.Result {
+			case organizer.ResultSuccess:
+				// Success count is calculated as ProcessedFiles - SkippedCount - FailedCount
+			case organizer.ResultSkipped:
+				stats.SkippedCount++
+			case organizer.ResultFailed:
+				stats.FailedCount++
+				r.logger.LogError(fmt.Sprintf("文件处理失败: %s, 原因: %s", file.Path, record.Message))
+			}
+		}
+
+		stats.ProcessedFiles++
+
+		// Print progress every 10 files or on last file
+		if (i+1)%10 == 0 || i == len(files)-1 {
+			r.printProgress(stats)
+		}
+	}
+
+	// Finalize statistics
+	stats.EndTime = time.Now()
+	stats.Duration = time.Since(startTime)
+
+	fmt.Println() // Add newline after progress
+
+	// Log all processing records to file
+	for _, record := range records {
+		r.logger.LogRecord(&record)
 	}
 
 	// Print final summary
@@ -78,6 +133,7 @@ func (r *SilentRunner) Run() error {
 
 	elapsed := time.Since(startTime)
 	fmt.Printf("处理完成，耗时: %v\n", elapsed)
+	fmt.Printf("详细日志已保存到: %s\n", r.logger.GetPath())
 
 	// Log statistics to file
 	r.logger.LogStatistics(stats)

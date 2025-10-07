@@ -101,6 +101,13 @@ func (l *Logger) LogStatistics(stats *organizer.Statistics) {
 	l.file.WriteString(summary)
 }
 
+// LogError 记录错误信息
+func (l *Logger) LogError(message string) {
+	timestamp := time.Now().Format("15:04:05")
+	line := fmt.Sprintf("[%s] ERROR | %s\n", timestamp, message)
+	l.file.WriteString(line)
+}
+
 // Close 关闭日志文件
 func (l *Logger) Close() error {
 	if l.file != nil {
