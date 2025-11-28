@@ -1,6 +1,7 @@
 package organizer
 
 import (
+	"bufio"
 	"crypto/md5"
 	"fmt"
 	"io"
@@ -11,11 +12,15 @@ import (
 	"github.com/chiyiangel/media-organizer-v2/internal/i18n"
 )
 
+// copyBufferSize 复制文件时使用的缓冲区大小 (64KB)
+const copyBufferSize = 64 * 1024
+
 // Processor 文件处理器
 type Processor struct {
 	config            *config.Config
 	metadataExtractor *MetadataExtractor
 	duplicateDetector *DuplicateDetector
+	createdDirs       map[string]bool // 缓存已创建的目录，避免重复调用 os.MkdirAll
 }
 
 // NewProcessor 创建处理器
@@ -24,6 +29,7 @@ func NewProcessor(cfg *config.Config) *Processor {
 		config:            cfg,
 		metadataExtractor: NewMetadataExtractor(),
 		duplicateDetector: NewDuplicateDetector(cfg),
+		createdDirs:       make(map[string]bool),
 	}
 }
 
@@ -124,11 +130,48 @@ func (p *Processor) generateUniqueTargetPath(file *FileInfo) string {
 	}
 }
 
-// copyFile 复制文件
+// PreCreateDirectories 预创建目录（方案2优化）
+// 在批量处理文件前，先收集所有需要创建的目录并批量创建
+// 这样可以避免在处理每个文件时重复检查和创建目录
+// 注意: 此方法会修改传入文件的 Date 字段作为副作用，以避免后续重复提取日期
+func (p *Processor) PreCreateDirectories(files []*FileInfo) error {
+	// 收集所有唯一的目标目录
+	dirs := make(map[string]bool)
+	for _, file := range files {
+		// 提取日期
+		date, err := p.metadataExtractor.ExtractDate(file)
+		if err != nil {
+			continue // 跳过无法提取日期的文件
+		}
+		file.Date = date
+
+		// 生成目标路径
+		targetPath := p.generateTargetPath(file)
+		dir := filepath.Dir(targetPath)
+		dirs[dir] = true
+	}
+
+	// 批量创建目录
+	for dir := range dirs {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+		p.createdDirs[dir] = true
+	}
+
+	return nil
+}
+
+// copyFile 复制文件（优化版本）
+// 使用缓冲IO和目录缓存来提高小文件处理效率
 func (p *Processor) copyFile(src, dst string) error {
-	// 创建目标目录
-	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
-		return err
+	// 检查并创建目标目录（使用缓存避免重复调用）
+	dir := filepath.Dir(dst)
+	if !p.createdDirs[dir] {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+		p.createdDirs[dir] = true
 	}
 
 	// 打开源文件
@@ -145,9 +188,17 @@ func (p *Processor) copyFile(src, dst string) error {
 	}
 	defer dstFile.Close()
 
-	// 复制
-	_, err = io.Copy(dstFile, srcFile)
-	return err
+	// 使用缓冲写入器提高小文件写入效率
+	bufferedWriter := bufio.NewWriterSize(dstFile, copyBufferSize)
+
+	// 复制文件内容
+	_, err = io.Copy(bufferedWriter, srcFile)
+	if err != nil {
+		return err
+	}
+
+	// 确保所有数据写入磁盘
+	return bufferedWriter.Flush()
 }
 
 // CalculateMD5 计算文件MD5

@@ -95,6 +95,7 @@ func (l *Localizer) initMessages() {
 			"silent.completed":           "处理完成，耗时: {0}",
 			"silent.log_saved":           "详细日志已保存到: {0}",
 			"silent.interrupt_received":  "接收到中断信号，正在停止...",
+			"silent.precreate_dirs_failed": "预创建目录失败: {0}",
 		},
 
 		LanguageEnglish: {
@@ -189,6 +190,7 @@ func (l *Localizer) initMessages() {
 			"silent.completed":           "Processing completed, elapsed time: {0}",
 			"silent.log_saved":           "Detailed log saved to: {0}",
 			"silent.interrupt_received":  "Interrupt signal received, stopping...",
+			"silent.precreate_dirs_failed": "Failed to pre-create directories: {0}",
 
 			// CLI messages
 			"cli.help.title":              "Media Organizer v{0}",
