@@ -51,6 +51,9 @@ type Model struct {
 	records      []organizer.ProcessRecord
 	allFiles     []*organizer.FileInfo
 
+	// 处理器（复用实例，避免每个文件都创建新的处理器）
+	processor *organizer.Processor
+
 	// 日志记录器
 	logger      *logger.Logger
 	logFilePath string
@@ -205,6 +208,11 @@ func (m Model) handleFileScanComplete(msg FileScanCompleteMsg) (tea.Model, tea.C
 		}
 	}
 
+	// 预创建目录（方案2优化）
+	if m.processor != nil && len(msg.Files) > 0 {
+		_ = m.processor.PreCreateDirectories(msg.Files)
+	}
+
 	// 切换到进度界面
 	m.currentScreen = ScreenProgress
 	m.isOrganizing = true
@@ -265,6 +273,9 @@ func (m Model) startOrganizing() (tea.Model, tea.Cmd) {
 	m.records = make([]organizer.ProcessRecord, 0)
 	m.cancelled = false
 
+	// 创建处理器实例（复用，避免每个文件都创建新实例）
+	m.processor = organizer.NewProcessor(m.config)
+
 	// 创建日志记录器
 	log, err := logger.NewLogger()
 	if err != nil {
@@ -311,21 +322,26 @@ func (m Model) processNextFileCmd(fileIndex int) tea.Cmd {
 		}
 	}
 
-	return func() tea.Msg {
-		file := m.allFiles[fileIndex]
-		processor := organizer.NewProcessor(m.config)
+	// 捕获处理器引用用于闭包
+	processor := m.processor
+	logger := m.logger
+	allFiles := m.allFiles
 
+	return func() tea.Msg {
+		file := allFiles[fileIndex]
+
+		// 使用共享的处理器实例（方案4优化）
 		record, _ := processor.Process(file)
 
 		// 记录到日志
-		if m.logger != nil {
-			m.logger.LogRecord(record)
+		if logger != nil {
+			logger.LogRecord(record)
 		}
 
 		return FileProcessedMsg{
 			Record:    record,
 			FileIndex: fileIndex,
-			Total:     len(m.allFiles),
+			Total:     len(allFiles),
 		}
 	}
 }

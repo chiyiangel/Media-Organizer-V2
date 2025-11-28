@@ -69,6 +69,11 @@ func (r *SilentRunner) Run() error {
 
 	fmt.Println(i18n.Tf("silent.files_found", len(files)))
 
+	// 预创建目录（方案2优化）
+	if err := r.processor.PreCreateDirectories(files); err != nil {
+		r.logger.LogError(i18n.Tf("silent.precreate_dirs_failed", err.Error()))
+	}
+
 	// Initialize statistics
 	stats := &organizer.Statistics{
 		TotalFiles:     len(files),
