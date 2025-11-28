@@ -11,9 +11,11 @@ import (
 
 func TestProcessorCreatedDirsCache(t *testing.T) {
 	// Test that the processor properly caches created directories
+	// Use os.TempDir() for cross-platform compatibility
+	tempDir := os.TempDir()
 	cfg := &config.Config{
-		SourceDir:          "/tmp/source",
-		TargetDir:          "/tmp/target",
+		SourceDir:          filepath.Join(tempDir, "source"),
+		TargetDir:          filepath.Join(tempDir, "target"),
 		DuplicateDetection: config.DetectionFilename,
 		DuplicateStrategy:  config.StrategySkip,
 	}

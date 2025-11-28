@@ -133,6 +133,7 @@ func (p *Processor) generateUniqueTargetPath(file *FileInfo) string {
 // PreCreateDirectories 预创建目录（方案2优化）
 // 在批量处理文件前，先收集所有需要创建的目录并批量创建
 // 这样可以避免在处理每个文件时重复检查和创建目录
+// 注意: 此方法会修改传入文件的 Date 字段作为副作用，以避免后续重复提取日期
 func (p *Processor) PreCreateDirectories(files []*FileInfo) error {
 	// 收集所有唯一的目标目录
 	dirs := make(map[string]bool)
@@ -189,7 +190,6 @@ func (p *Processor) copyFile(src, dst string) error {
 
 	// 使用缓冲写入器提高小文件写入效率
 	bufferedWriter := bufio.NewWriterSize(dstFile, copyBufferSize)
-	defer bufferedWriter.Flush()
 
 	// 复制文件内容
 	_, err = io.Copy(bufferedWriter, srcFile)
