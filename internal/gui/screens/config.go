@@ -250,8 +250,35 @@ func (s *ConfigScreen) onImportConfig() {
 		}
 		defer reader.Close()
 		
-		// TODO: Implement config import logic
-		dialog.ShowInformation("导入配置", "配置导入功能开发中...", s.app.Window())
+		// 导入配置
+		cfg, err := config.ImportConfig(reader.URI().Path())
+		if err != nil {
+			dialog.ShowError(fmt.Errorf("导入配置失败: %v", err), s.app.Window())
+			return
+		}
+		
+		// 更新界面 - 源目录和目标目录
+		s.sourceEntry.SetText(cfg.SourceDir)
+		s.targetEntry.SetText(cfg.TargetDir)
+		
+		// 更新重复检测方式
+		if cfg.DuplicateDetection == config.DetectionMD5 {
+			s.detectionGroup.SetSelected("按MD5哈希")
+		} else {
+			s.detectionGroup.SetSelected("按文件名")
+		}
+		
+		// 更新处理策略
+		switch cfg.DuplicateStrategy {
+		case config.StrategySkip:
+			s.strategyGroup.SetSelected("跳过 (保留原文件)")
+		case config.StrategyOverwrite:
+			s.strategyGroup.SetSelected("覆盖 (替换原文件)")
+		case config.StrategyRename:
+			s.strategyGroup.SetSelected("重命名 (添加序号)")
+		}
+		
+		dialog.ShowInformation("导入成功", "配置已成功导入", s.app.Window())
 	}, s.app.Window())
 }
 
@@ -267,7 +294,16 @@ func (s *ConfigScreen) onExportConfig() {
 		}
 		defer writer.Close()
 		
-		// TODO: Implement config export logic
-		dialog.ShowInformation("导出配置", "配置导出功能开发中...", s.app.Window())
+		// 先保存当前配置
+		s.OnHide()
+		
+		// 导出配置
+		cfg := s.app.Config()
+		if err := config.ExportConfig(cfg, writer.URI().Path()); err != nil {
+			dialog.ShowError(fmt.Errorf("导出配置失败: %v", err), s.app.Window())
+			return
+		}
+		
+		dialog.ShowInformation("导出成功", "配置已成功导出到文件", s.app.Window())
 	}, s.app.Window())
 }

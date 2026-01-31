@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/chiyiangel/media-organizer-v2/internal/config"
 	"github.com/chiyiangel/media-organizer-v2/internal/gui/screens"
+	"github.com/chiyiangel/media-organizer-v2/internal/history"
 )
 
 // App represents the GUI application
@@ -14,6 +15,7 @@ type App struct {
 	fyneApp fyne.App
 	window  fyne.Window
 	config  *config.Config
+	history *history.Manager
 	
 	// UI components
 	sidebar   *widget.List
@@ -26,10 +28,18 @@ func NewApp(cfg *config.Config) *App {
 	a := app.New()
 	w := a.NewWindow("Media Organizer V2")
 	
+	// 创建历史记录管理器
+	historyMgr, err := history.NewManager("")
+	if err != nil {
+		// 如果创建失败，使用nil，界面会优雅降级
+		historyMgr = nil
+	}
+	
 	guiApp := &App{
 		fyneApp: a,
 		window:  w,
 		config:  cfg,
+		history: historyMgr,
 	}
 	
 	guiApp.setupUI()
@@ -118,6 +128,11 @@ func (a *App) Run() {
 // Config returns the application configuration
 func (a *App) Config() *config.Config {
 	return a.config
+}
+
+// History returns the history manager
+func (a *App) History() *history.Manager {
+	return a.history
 }
 
 // Window returns the main window
