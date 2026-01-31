@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"github.com/chiyiangel/media-organizer-v2/internal/organizer"
 )
 
 // ProgressScreen represents the progress screen
@@ -26,15 +27,21 @@ type ProgressScreen struct {
 	openFolderButton  *widget.Button
 	
 	// State
-	isPaused    bool
-	isCancelled bool
-	startTime   time.Time
+	processManager *organizer.ProcessManager
+	stats          *organizer.Statistics
+	isPaused       bool
+	isCancelled    bool
+	startTime      time.Time
+	logBuffer      []string
+	maxLogLines    int
 }
 
 // NewProgressScreen creates a new progress screen
 func NewProgressScreen(app AppInterface) *ProgressScreen {
 	screen := &ProgressScreen{
-		app: app,
+		app:         app,
+		maxLogLines: 10,
+		logBuffer:   make([]string, 0, 10),
 	}
 	
 	screen.initUI()
@@ -143,59 +150,106 @@ func (s *ProgressScreen) OnShow() {
 	s.startTime = time.Now()
 	s.isPaused = false
 	s.isCancelled = false
+	s.logBuffer = make([]string, 0, s.maxLogLines)
 	
-	// Start processing
-	go s.startProcessing()
+	// 创建处理器
+	cfg := s.app.Config()
+	scanner := organizer.NewScanner(cfg.SourceDir)
+	processor := organizer.NewProcessor(cfg)
+	s.processManager = organizer.NewProcessManager(scanner, processor, s)
+	
+	// 启动处理
+	go func() {
+		if err := s.processManager.Start(); err != nil {
+			dialog.ShowError(err, s.app.Window())
+		}
+	}()
 }
 
 // OnHide is called when the screen is hidden
 func (s *ProgressScreen) OnHide() {
 	// Cleanup if needed
-}
-
-// startProcessing starts the file processing
-func (s *ProgressScreen) startProcessing() {
-	// Simulate processing for demo
-	// TODO: Replace with actual processing logic
-	
-	totalFiles := 100
-	
-	for i := 1; i <= totalFiles; i++ {
-		if s.isCancelled {
-			break
-		}
-		
-		// Check if paused
-		for s.isPaused {
-			time.Sleep(100 * time.Millisecond)
-			if s.isCancelled {
-				return
-			}
-		}
-		
-		// Update UI
-		s.updateProgress(i, totalFiles, fmt.Sprintf("IMG_%04d.jpg", i))
-		
-		// Simulate processing time
-		time.Sleep(50 * time.Millisecond)
-	}
-	
-	if !s.isCancelled {
-		// Processing complete, show summary
-		s.showCompletionDialog()
+	if s.processManager != nil && !s.processManager.IsStopped() {
+		s.processManager.Stop()
 	}
 }
 
-// updateProgress updates the progress display
-func (s *ProgressScreen) updateProgress(current, total int, filename string) {
+// ProcessCallback 接口实现
+
+// OnStart 处理开始时调用
+func (s *ProgressScreen) OnStart(totalFiles int) {
+	s.currentFileLabel.SetText("准备开始...")
+	s.progressBar.Max = float64(totalFiles)
+	s.addLog(fmt.Sprintf("开始处理，共 %d 个文件", totalFiles))
+}
+
+// OnProgress 处理进度更新时调用
+func (s *ProgressScreen) OnProgress(current int, total int, file *organizer.FileInfo) {
 	percent := float64(current) / float64(total)
 	
-	s.currentFileLabel.SetText(filename)
-	s.targetPathLabel.SetText(fmt.Sprintf("/Users/organized/2024/01/01-15/%s", filename))
-	s.progressBar.SetValue(percent)
+	s.currentFileLabel.SetText(file.Name)
+	s.targetPathLabel.SetText(file.TargetPath)
+	s.progressBar.SetValue(float64(current))
 	s.progressLabel.SetText(fmt.Sprintf("%d%%", int(percent*100)))
 	
-	// Update statistics
+	// 更新统计信息
+	if s.stats != nil {
+		s.updateStats()
+	}
+	
+	// 添加日志
+	s.addLog(fmt.Sprintf("✓ %s → %s", file.Name, file.TargetPath))
+}
+
+// OnComplete 处理完成时调用
+func (s *ProgressScreen) OnComplete(stats *organizer.Statistics) {
+	s.stats = stats
+	s.updateStats()
+	s.showCompletionDialog()
+}
+
+// OnError 发生错误时调用
+func (s *ProgressScreen) OnError(err error) {
+	s.addLog(fmt.Sprintf("❌ 错误: %v", err))
+	dialog.ShowError(err, s.app.Window())
+}
+
+// Helper methods
+
+// addLog 添加日志条目
+func (s *ProgressScreen) addLog(message string) {
+	timestamp := time.Now().Format("15:04:05")
+	logLine := fmt.Sprintf("[%s] %s", timestamp, message)
+	
+	s.logBuffer = append(s.logBuffer, logLine)
+	if len(s.logBuffer) > s.maxLogLines {
+		s.logBuffer = s.logBuffer[1:]
+	}
+	
+	logText := ""
+	for _, line := range s.logBuffer {
+		logText += line + "\n"
+	}
+	s.logEntry.SetText(logText)
+}
+
+// updateStats 更新统计信息显示
+func (s *ProgressScreen) updateStats() {
+	if s.stats == nil {
+		return
+	}
+	
+	elapsed := s.stats.Duration
+	if elapsed == 0 {
+		elapsed = time.Since(s.startTime)
+	}
+	
+	speed := float64(s.stats.ProcessedFiles) / elapsed.Seconds()
+	remaining := 0
+	if speed > 0 {
+		remaining = int(float64(s.stats.TotalFiles-s.stats.ProcessedFiles) / speed)
+	}
+	
 	statsText := fmt.Sprintf(`**已扫描:** %d 个文件
 **已处理:** %d 个文件
   ├─ 📷 照片: %d 个
@@ -205,31 +259,32 @@ func (s *ProgressScreen) updateProgress(current, total int, filename string) {
 
 **剩余时间:** 约 %d 秒
 **处理速度:** %.1f 个/秒`,
-		total,
-		current,
-		int(float64(current) * 0.7),
-		int(float64(current) * 0.25),
-		int(float64(current) * 0.04),
-		int(float64(current) * 0.01),
-		(total-current)/10,
-		10.0,
+		s.stats.ScannedFiles,
+		s.stats.ProcessedFiles,
+		s.stats.PhotoCount,
+		s.stats.VideoCount,
+		s.stats.SkippedCount,
+		s.stats.FailedCount,
+		remaining,
+		speed,
 	)
 	s.statsLabel.ParseMarkdown(statsText)
-	
-	// Add log entry
-	timestamp := time.Now().Format("15:04:05")
-	logLine := fmt.Sprintf("[%s] ✓ %s → 2024/01/01-15/\n", timestamp, filename)
-	s.logEntry.SetText(s.logEntry.Text + logLine)
 }
 
 // onPause handles the pause button click
 func (s *ProgressScreen) onPause() {
-	s.isPaused = !s.isPaused
+	if s.processManager == nil {
+		return
+	}
 	
-	if s.isPaused {
-		s.pauseButton.SetText("继续")
-	} else {
+	if s.processManager.IsPaused() {
+		s.processManager.Resume()
 		s.pauseButton.SetText("暂停")
+		s.addLog("继续处理...")
+	} else {
+		s.processManager.Pause()
+		s.pauseButton.SetText("继续")
+		s.addLog("已暂停")
 	}
 }
 
@@ -240,7 +295,12 @@ func (s *ProgressScreen) onCancel() {
 		"确定要取消当前处理吗？",
 		func(confirmed bool) {
 			if confirmed {
+				if s.processManager != nil {
+					s.processManager.Stop()
+				}
 				s.isCancelled = true
+				s.addLog("已取消处理")
+				time.Sleep(500 * time.Millisecond)
 				s.app.NavigateTo(0) // Go back to config screen
 			}
 		},
@@ -256,9 +316,24 @@ func (s *ProgressScreen) onOpenFolder() {
 
 // showCompletionDialog shows the completion dialog
 func (s *ProgressScreen) showCompletionDialog() {
+	successMsg := fmt.Sprintf(`处理完成！
+
+总文件数: %d
+成功: %d
+跳过: %d
+失败: %d
+
+耗时: %s`,
+		s.stats.TotalFiles,
+		s.stats.ProcessedFiles - s.stats.SkippedCount - s.stats.FailedCount,
+		s.stats.SkippedCount,
+		s.stats.FailedCount,
+		s.stats.Duration.Round(time.Second),
+	)
+	
 	dialog.ShowInformation(
 		"处理完成",
-		"文件整理已完成！\n\n点击确定查看结果详情。",
+		successMsg,
 		s.app.Window(),
 	)
 	
