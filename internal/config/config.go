@@ -11,6 +11,7 @@ type OperationMode string
 const (
 	ModeInteractive OperationMode = "interactive" // Default TUI mode
 	ModeSilent      OperationMode = "silent"      // Non-interactive mode
+	ModeGUI         OperationMode = "gui"         // GUI mode
 )
 
 // ConfigSource defines where configuration comes from
@@ -68,7 +69,7 @@ func NewDefaultConfig() *Config {
 // Validate 验证配置
 func (c *Config) Validate() error {
 	// Validate operation mode
-	if c.Mode != ModeInteractive && c.Mode != ModeSilent {
+	if c.Mode != ModeInteractive && c.Mode != ModeSilent && c.Mode != ModeGUI {
 		return fmt.Errorf("无效的操作模式: %s", c.Mode)
 	}
 
@@ -82,7 +83,7 @@ func (c *Config) Validate() error {
 			return fmt.Errorf("在静默模式下，目标目录不能为空")
 		}
 	} else {
-		// In interactive mode, directories are optional (can be set in TUI)
+		// In interactive/GUI mode, directories are optional (can be set in UI)
 		if c.SourceDir != "" && c.TargetDir != "" {
 			// If both are provided, validate them
 			if _, err := os.Stat(c.SourceDir); os.IsNotExist(err) {

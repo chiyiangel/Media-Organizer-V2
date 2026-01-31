@@ -7,6 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/chiyiangel/media-organizer-v2/internal/app"
 	"github.com/chiyiangel/media-organizer-v2/internal/config"
+	"github.com/chiyiangel/media-organizer-v2/internal/gui"
 	"github.com/chiyiangel/media-organizer-v2/internal/i18n"
 	"github.com/chiyiangel/media-organizer-v2/internal/ui"
 )
@@ -39,6 +40,8 @@ func main() {
 	switch finalConfig.Mode {
 	case config.ModeSilent:
 		runSilentMode(finalConfig)
+	case config.ModeGUI:
+		runGUIMode(finalConfig)
 	case config.ModeInteractive:
 		fallthrough
 	default:
@@ -81,4 +84,14 @@ func runInteractiveMode(config *config.Config) {
 		fmt.Print(errorMsg)
 		os.Exit(1)
 	}
+}
+
+// runGUIMode executes the application in GUI mode
+func runGUIMode(config *config.Config) {
+	// 初始化多语言系统
+	_ = i18n.GetLocalizer()
+	
+	// 创建并运行 GUI 应用
+	guiApp := gui.NewApp(config)
+	guiApp.Run()
 }

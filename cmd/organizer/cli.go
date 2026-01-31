@@ -81,7 +81,10 @@ func (p *CLIParser) Parse(args []string) (*config.Config, error) {
 // validate validates the parsed CLI configuration
 func (p *CLIParser) validate() error {
 	// Validate operation mode if specified
-	if p.config.Mode != "" && p.config.Mode != config.ModeInteractive && p.config.Mode != config.ModeSilent {
+	if p.config.Mode != "" && 
+		p.config.Mode != config.ModeInteractive && 
+		p.config.Mode != config.ModeSilent &&
+		p.config.Mode != config.ModeGUI {
 		errorMsg := i18n.Tf("cli.error.invalid_mode", p.config.Mode)
 		return fmt.Errorf("%s", errorMsg)
 	}
