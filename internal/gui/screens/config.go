@@ -8,11 +8,13 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/chiyiangel/media-organizer-v2/internal/config"
+	"github.com/chiyiangel/media-organizer-v2/internal/history"
 )
 
 // AppInterface defines the interface for accessing the main app
 type AppInterface interface {
 	Config() *config.Config
+	History() *history.Manager
 	Window() fyne.Window
 	NavigateTo(id widget.ListItemID)
 }

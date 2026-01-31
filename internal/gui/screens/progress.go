@@ -205,6 +205,16 @@ func (s *ProgressScreen) OnProgress(current int, total int, file *organizer.File
 func (s *ProgressScreen) OnComplete(stats *organizer.Statistics) {
 	s.stats = stats
 	s.updateStats()
+	
+	// 保存到历史记录
+	histMgr := s.app.History()
+	if histMgr != nil {
+		cfg := s.app.Config()
+		if err := histMgr.Add(cfg, stats); err != nil {
+			s.addLog(fmt.Sprintf("⚠️  保存历史记录失败: %v", err))
+		}
+	}
+	
 	s.showCompletionDialog()
 }
 
