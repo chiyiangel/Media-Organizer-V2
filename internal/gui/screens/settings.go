@@ -213,6 +213,10 @@ func (s *SettingsScreen) OnShow() {
 		s.defaultTargetEntry.SetText(cfg.TargetDir)
 	}
 	
+	// 加载主题设置
+	theme := s.app.GetTheme()
+	s.themeGroup.SetSelected(theme)
+	
 	// 更新历史记录数量
 	histMgr := s.app.History()
 	if histMgr != nil {

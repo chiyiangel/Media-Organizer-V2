@@ -219,3 +219,11 @@ func (a *App) ShouldStartProcessing() bool {
 	}
 	return false
 }
+
+// GetTheme 获取当前主题设置
+func (a *App) GetTheme() string {
+	if a.settings != nil {
+		return a.settings.Get().Theme
+	}
+	return "自动 (跟随系统)"
+}

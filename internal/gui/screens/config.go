@@ -18,6 +18,7 @@ type AppInterface interface {
 	Window() fyne.Window
 	NavigateTo(id widget.ListItemID)
 	StartProcessing() // 启动处理（设置 shouldStart 标志并切换到进度页面）
+	GetTheme() string // 获取当前主题设置
 }
 
 // ConfigScreen represents the configuration screen

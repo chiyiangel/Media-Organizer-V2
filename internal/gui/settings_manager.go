@@ -10,7 +10,7 @@ import (
 type Settings struct {
 	WindowWidth  int    `json:"window_width"`
 	WindowHeight int    `json:"window_height"`
-	Theme        string `json:"theme"` // "auto", "light", "dark"
+	Theme        string `json:"theme"` // "自动 (跟随系统)", "明亮模式", "暗黑模式"
 	
 	// Notification settings
 	NotifyOnComplete bool `json:"notify_on_complete"`
@@ -59,7 +59,7 @@ func getDefaultSettings() *Settings {
 	return &Settings{
 		WindowWidth:      900,
 		WindowHeight:     600,
-		Theme:            "auto",
+		Theme:            "自动 (跟随系统)",
 		NotifyOnComplete: true,
 		NotifyOnError:    true,
 		AutoCheckUpdate:  true,
