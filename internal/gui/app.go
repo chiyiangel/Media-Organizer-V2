@@ -16,6 +16,7 @@ type App struct {
 	window  fyne.Window
 	config  *config.Config
 	history *history.Manager
+	settings *SettingsManager
 	
 	// UI components
 	sidebar   *widget.List
@@ -35,11 +36,19 @@ func NewApp(cfg *config.Config) *App {
 		historyMgr = nil
 	}
 	
+	// 创建设置管理器
+	settingsMgr, err := NewSettingsManager("")
+	if err != nil {
+		// 如果创建失败，使用默认设置
+		settingsMgr = nil
+	}
+	
 	guiApp := &App{
-		fyneApp: a,
-		window:  w,
-		config:  cfg,
-		history: historyMgr,
+		fyneApp:  a,
+		window:   w,
+		config:   cfg,
+		history:  historyMgr,
+		settings: settingsMgr,
 	}
 	
 	guiApp.setupUI()
@@ -56,10 +65,31 @@ func (a *App) SetTheme(themeName string) {
 	default: // "自动 (跟随系统)"
 		a.fyneApp.Settings().SetTheme(nil) // Use system default
 	}
+	
+	// 保存主题设置
+	if a.settings != nil {
+		settings := a.settings.Get()
+		settings.Theme = themeName
+		a.settings.Save()
+	}
 }
 
 // setupUI initializes the user interface
 func (a *App) setupUI() {
+	// 应用保存的设置
+	if a.settings != nil {
+		settings := a.settings.Get()
+		
+		// 应用主题
+		a.SetTheme(settings.Theme)
+		
+		// 应用窗口大小
+		a.window.Resize(fyne.NewSize(float32(settings.WindowWidth), float32(settings.WindowHeight)))
+	} else {
+		// 使用默认大小
+		a.window.Resize(fyne.NewSize(900, 600))
+	}
+	
 	// Create sidebar navigation
 	a.sidebar = widget.NewList(
 		func() int { return 4 }, // Number of items
@@ -98,7 +128,17 @@ func (a *App) setupUI() {
 	
 	// Set window content
 	a.window.SetContent(split)
-	a.window.Resize(fyne.NewSize(900, 600))
+	
+	// 保存窗口关闭时的设置
+	a.window.SetOnClosed(func() {
+		if a.settings != nil {
+			settings := a.settings.Get()
+			size := a.window.Canvas().Size()
+			settings.WindowWidth = int(size.Width)
+			settings.WindowHeight = int(size.Height)
+			a.settings.Save()
+		}
+	})
 	
 	// Show config screen by default
 	a.navigateTo(0)
@@ -145,6 +185,11 @@ func (a *App) Config() *config.Config {
 // History returns the history manager
 func (a *App) History() *history.Manager {
 	return a.history
+}
+
+// Settings returns the settings manager
+func (a *App) Settings() *SettingsManager {
+	return a.settings
 }
 
 // Window returns the main window

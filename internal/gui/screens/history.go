@@ -2,12 +2,14 @@ package screens
 
 import (
 	"fmt"
+	"strings"
 	"time"
 	
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"github.com/chiyiangel/media-organizer-v2/internal/config"
 	"github.com/chiyiangel/media-organizer-v2/internal/history"
 )
 
@@ -25,8 +27,9 @@ type HistoryScreen struct {
 	clearAllBtn    *widget.Button
 	
 	// Data
-	historyData []*history.Record
-	selectedID  int
+	allHistory     []*history.Record // 所有历史记录
+	historyData    []*history.Record // 过滤后的历史记录
+	selectedID     int
 }
 
 // NewHistoryScreen creates a new history screen
@@ -45,6 +48,9 @@ func NewHistoryScreen(app AppInterface) *HistoryScreen {
 func (s *HistoryScreen) initUI() {
 	s.searchEntry = widget.NewEntry()
 	s.searchEntry.SetPlaceHolder("搜索...")
+	s.searchEntry.OnChanged = func(query string) {
+		s.filterHistory(query)
+	}
 	
 	s.historyList = widget.NewList(
 		func() int {
@@ -152,11 +158,38 @@ func (s *HistoryScreen) loadHistory() {
 	histMgr := s.app.History()
 	if histMgr == nil {
 		// 历史记录管理器不可用
+		s.allHistory = make([]*history.Record, 0)
 		s.historyData = make([]*history.Record, 0)
 		return
 	}
 	
-	s.historyData = histMgr.GetAll()
+	s.allHistory = histMgr.GetAll()
+	s.historyData = s.allHistory
+	s.historyList.Refresh()
+}
+
+// filterHistory filters the history based on search query
+func (s *HistoryScreen) filterHistory(query string) {
+	if query == "" {
+		s.historyData = s.allHistory
+	} else {
+		filtered := make([]*history.Record, 0)
+		queryLower := strings.ToLower(query)
+		
+		for _, record := range s.allHistory {
+			// 搜索源目录、目标目录、日期
+			if strings.Contains(strings.ToLower(record.SourceDir), queryLower) ||
+				strings.Contains(strings.ToLower(record.TargetDir), queryLower) ||
+				strings.Contains(strings.ToLower(record.Date.Format("2006-01-02")), queryLower) {
+				filtered = append(filtered, record)
+			}
+		}
+		
+		s.historyData = filtered
+	}
+	
+	s.selectedID = -1
+	s.detailsText.ParseMarkdown("")
 	s.historyList.Refresh()
 }
 
@@ -237,10 +270,10 @@ func (s *HistoryScreen) onUseConfig() {
 	
 	// 从 map 中恢复配置
 	if val, ok := record.Config["duplicate_detection"].(string); ok {
-		cfg.DuplicateDetection = val
+		cfg.DuplicateDetection = config.DuplicateDetection(val)
 	}
 	if val, ok := record.Config["duplicate_strategy"].(string); ok {
-		cfg.DuplicateStrategy = val
+		cfg.DuplicateStrategy = config.DuplicateStrategy(val)
 	}
 	if val, ok := record.Config["log_level"].(string); ok {
 		cfg.LogLevel = val

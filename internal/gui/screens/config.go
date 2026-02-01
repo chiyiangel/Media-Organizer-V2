@@ -204,19 +204,19 @@ func (s *ConfigScreen) OnHide() {
 	
 	// Save detection method
 	if s.detectionGroup.Selected == "按MD5哈希" {
-		cfg.DuplicateDetection = "md5"
+		cfg.DuplicateDetection = config.DetectionMD5
 	} else {
-		cfg.DuplicateDetection = "filename"
+		cfg.DuplicateDetection = config.DetectionFilename
 	}
 	
 	// Save strategy
 	switch s.strategyGroup.Selected {
 	case "跳过 (保留原文件)":
-		cfg.DuplicateStrategy = "skip"
+		cfg.DuplicateStrategy = config.StrategySkip
 	case "覆盖 (替换原文件)":
-		cfg.DuplicateStrategy = "overwrite"
+		cfg.DuplicateStrategy = config.StrategyOverwrite
 	default:
-		cfg.DuplicateStrategy = "rename"
+		cfg.DuplicateStrategy = config.StrategyRename
 	}
 }
 

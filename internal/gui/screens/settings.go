@@ -316,7 +316,8 @@ func (s *SettingsScreen) onSave() {
 		cfg.TargetDir = s.defaultTargetEntry.Text
 	}
 	
-	// TODO: 保存其他设置（通知、自动更新等）到配置文件
+	// 主题已经通过 SetTheme 实时保存了
+	// 其他设置暂时不持久化（TODO: 未来可以添加）
 	
 	dialog.ShowInformation("保存", "设置已保存", s.app.Window())
 	s.app.NavigateTo(0) // 返回配置页面
