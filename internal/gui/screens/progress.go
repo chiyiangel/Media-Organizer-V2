@@ -215,12 +215,36 @@ func (s *ProgressScreen) OnComplete(stats *organizer.Statistics) {
 		}
 	}
 	
+	// 发送系统通知
+	successCount := stats.ProcessedFiles - stats.SkippedCount - stats.FailedCount
+	notification := &Notification{
+		Title:   "Media Organizer - 处理完成",
+		Message: fmt.Sprintf("成功处理 %d 个文件", successCount),
+		Sound:   true,
+	}
+	
+	if err := sendNotification(notification); err != nil {
+		s.addLog(fmt.Sprintf("⚠️  发送通知失败: %v", err))
+	}
+	
 	s.showCompletionDialog()
 }
 
 // OnError 发生错误时调用
 func (s *ProgressScreen) OnError(err error) {
 	s.addLog(fmt.Sprintf("❌ 错误: %v", err))
+	
+	// 发送错误通知
+	notification := &Notification{
+		Title:   "Media Organizer - 处理错误",
+		Message: fmt.Sprintf("错误: %v", err),
+		Sound:   true,
+	}
+	
+	if notifyErr := sendNotification(notification); notifyErr != nil {
+		s.addLog(fmt.Sprintf("⚠️  发送通知失败: %v", notifyErr))
+	}
+	
 	dialog.ShowError(err, s.app.Window())
 }
 
@@ -320,8 +344,18 @@ func (s *ProgressScreen) onCancel() {
 
 // onOpenFolder handles the open folder button click
 func (s *ProgressScreen) onOpenFolder() {
-	// TODO: Implement open folder logic
-	dialog.ShowInformation("打开文件夹", "打开文件夹功能开发中...", s.app.Window())
+	cfg := s.app.Config()
+	if cfg.TargetDir == "" {
+		dialog.ShowError(fmt.Errorf("目标目录未设置"), s.app.Window())
+		return
+	}
+	
+	// macOS: use 'open' command
+	// TODO: Add support for other platforms
+	err := openFolder(cfg.TargetDir)
+	if err != nil {
+		dialog.ShowError(fmt.Errorf("打开文件夹失败: %v", err), s.app.Window())
+	}
 }
 
 // showCompletionDialog shows the completion dialog

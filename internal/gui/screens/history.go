@@ -223,12 +223,30 @@ func (s *HistoryScreen) showDetails(id widget.ListItemID) {
 
 // onUseConfig handles the use config button click
 func (s *HistoryScreen) onUseConfig() {
-	if s.selectedID < 0 {
+	if s.selectedID < 0 || s.selectedID >= len(s.historyData) {
 		dialog.ShowInformation("提示", "请先选择一条历史记录", s.app.Window())
 		return
 	}
 	
-	dialog.ShowInformation("使用配置", "配置已应用到配置页面", s.app.Window())
+	record := s.historyData[s.selectedID]
+	cfg := s.app.Config()
+	
+	// 应用配置
+	cfg.SourceDir = record.SourceDir
+	cfg.TargetDir = record.TargetDir
+	
+	// 从 map 中恢复配置
+	if val, ok := record.Config["duplicate_detection"].(string); ok {
+		cfg.DuplicateDetection = val
+	}
+	if val, ok := record.Config["duplicate_strategy"].(string); ok {
+		cfg.DuplicateStrategy = val
+	}
+	if val, ok := record.Config["log_level"].(string); ok {
+		cfg.LogLevel = val
+	}
+	
+	dialog.ShowInformation("使用配置", "配置已应用，请前往配置页面查看", s.app.Window())
 	s.app.NavigateTo(0)
 }
 

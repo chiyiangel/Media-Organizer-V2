@@ -46,6 +46,18 @@ func NewApp(cfg *config.Config) *App {
 	return guiApp
 }
 
+// SetTheme sets the application theme
+func (a *App) SetTheme(themeName string) {
+	switch themeName {
+	case "明亮模式":
+		a.fyneApp.Settings().SetTheme(&customLightTheme{})
+	case "暗黑模式":
+		a.fyneApp.Settings().SetTheme(&customDarkTheme{})
+	default: // "自动 (跟随系统)"
+		a.fyneApp.Settings().SetTheme(nil) // Use system default
+	}
+}
+
 // setupUI initializes the user interface
 func (a *App) setupUI() {
 	// Create sidebar navigation

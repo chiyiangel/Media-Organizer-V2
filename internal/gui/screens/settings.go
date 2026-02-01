@@ -1,6 +1,8 @@
 package screens
 
 import (
+	"fmt"
+	
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
@@ -44,7 +46,12 @@ func (s *SettingsScreen) initUI() {
 	// Theme section
 	s.themeGroup = widget.NewRadioGroup(
 		[]string{"自动 (跟随系统)", "明亮模式", "暗黑模式"},
-		func(value string) {},
+		func(value string) {
+			// 主题更改时立即应用
+			if appWithTheme, ok := s.app.(interface{ SetTheme(string) }); ok {
+				appWithTheme.SetTheme(value)
+			}
+		},
 	)
 	s.themeGroup.SetSelected("自动 (跟随系统)")
 	
@@ -197,7 +204,26 @@ func (s *SettingsScreen) Content() fyne.CanvasObject {
 
 // OnShow is called when the screen is shown
 func (s *SettingsScreen) OnShow() {
-	// Load settings
+	// 加载设置
+	cfg := s.app.Config()
+	if cfg.SourceDir != "" {
+		s.defaultSourceEntry.SetText(cfg.SourceDir)
+	}
+	if cfg.TargetDir != "" {
+		s.defaultTargetEntry.SetText(cfg.TargetDir)
+	}
+	
+	// 更新历史记录数量
+	histMgr := s.app.History()
+	if histMgr != nil {
+		count := len(histMgr.GetAll())
+		s.historyCountLabel.SetText(fmt.Sprintf("历史记录数: %d 条", count))
+	} else {
+		s.historyCountLabel.SetText("历史记录数: 0 条")
+	}
+	
+	// TODO: 更新日志文件大小
+	s.logSizeLabel.SetText("日志文件大小: 0 MB")
 }
 
 // OnHide is called when the screen is hidden
@@ -212,11 +238,29 @@ func (s *SettingsScreen) onCheckUpdate() {
 
 // onClearHistory handles the clear history button click
 func (s *SettingsScreen) onClearHistory() {
+	histMgr := s.app.History()
+	if histMgr == nil {
+		dialog.ShowError(fmt.Errorf("历史记录管理器不可用"), s.app.Window())
+		return
+	}
+	
+	if len(histMgr.GetAll()) == 0 {
+		dialog.ShowInformation("提示", "没有历史记录可清理", s.app.Window())
+		return
+	}
+	
 	dialog.ShowConfirm(
 		"确认清理",
-		"确定要清理历史记录吗？",
+		"确定要清理所有历史记录吗？此操作不可恢复。",
 		func(confirmed bool) {
 			if confirmed {
+				if err := histMgr.Clear(); err != nil {
+					dialog.ShowError(fmt.Errorf("清理失败: %v", err), s.app.Window())
+					return
+				}
+				
+				// 更新显示
+				s.historyCountLabel.SetText("历史记录数: 0 条")
 				dialog.ShowInformation("清理", "历史记录已清理", s.app.Window())
 			}
 		},
@@ -262,6 +306,18 @@ func (s *SettingsScreen) onReset() {
 
 // onSave handles the save button click
 func (s *SettingsScreen) onSave() {
-	// TODO: Save settings to configuration
+	cfg := s.app.Config()
+	
+	// 保存默认目录
+	if s.defaultSourceEntry.Text != "" {
+		cfg.SourceDir = s.defaultSourceEntry.Text
+	}
+	if s.defaultTargetEntry.Text != "" {
+		cfg.TargetDir = s.defaultTargetEntry.Text
+	}
+	
+	// TODO: 保存其他设置（通知、自动更新等）到配置文件
+	
 	dialog.ShowInformation("保存", "设置已保存", s.app.Window())
+	s.app.NavigateTo(0) // 返回配置页面
 }
