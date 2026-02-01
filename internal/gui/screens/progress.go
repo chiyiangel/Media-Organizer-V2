@@ -178,80 +178,97 @@ func (s *ProgressScreen) OnHide() {
 
 // OnStart 处理开始时调用
 func (s *ProgressScreen) OnStart(totalFiles int) {
-	s.currentFileLabel.SetText("准备开始...")
-	s.progressBar.Max = float64(totalFiles)
-	s.addLog(fmt.Sprintf("开始处理，共 %d 个文件", totalFiles))
+	fyne.Do(func() {
+		s.currentFileLabel.SetText("准备开始...")
+		s.progressBar.Max = float64(totalFiles)
+		s.addLogUnsafe(fmt.Sprintf("开始处理，共 %d 个文件", totalFiles))
+	})
 }
 
 // OnProgress 处理进度更新时调用
 func (s *ProgressScreen) OnProgress(current int, total int, file *organizer.FileInfo) {
-	percent := float64(current) / float64(total)
-	
-	s.currentFileLabel.SetText(file.Name)
-	s.targetPathLabel.SetText(file.TargetPath)
-	s.progressBar.SetValue(float64(current))
-	s.progressLabel.SetText(fmt.Sprintf("%d%%", int(percent*100)))
-	
-	// 更新统计信息
-	if s.stats != nil {
-		s.updateStats()
-	}
-	
-	// 添加日志
-	s.addLog(fmt.Sprintf("✓ %s → %s", file.Name, file.TargetPath))
+	fyne.Do(func() {
+		percent := float64(current) / float64(total)
+		
+		s.currentFileLabel.SetText(file.Name)
+		s.targetPathLabel.SetText(file.TargetPath)
+		s.progressBar.SetValue(float64(current))
+		s.progressLabel.SetText(fmt.Sprintf("%d%%", int(percent*100)))
+		
+		// 更新统计信息
+		if s.stats != nil {
+			s.updateStatsUnsafe()
+		}
+		
+		// 添加日志
+		s.addLogUnsafe(fmt.Sprintf("✓ %s → %s", file.Name, file.TargetPath))
+	})
 }
 
 // OnComplete 处理完成时调用
 func (s *ProgressScreen) OnComplete(stats *organizer.Statistics) {
 	s.stats = stats
-	s.updateStats()
 	
-	// 保存到历史记录
-	histMgr := s.app.History()
-	if histMgr != nil {
-		cfg := s.app.Config()
-		if err := histMgr.Add(cfg, stats); err != nil {
-			s.addLog(fmt.Sprintf("⚠️  保存历史记录失败: %v", err))
+	fyne.Do(func() {
+		s.updateStatsUnsafe()
+		
+		// 保存到历史记录
+		histMgr := s.app.History()
+		if histMgr != nil {
+			cfg := s.app.Config()
+			if err := histMgr.Add(cfg, stats); err != nil {
+				s.addLogUnsafe(fmt.Sprintf("⚠️  保存历史记录失败: %v", err))
+			}
 		}
-	}
-	
-	// 发送系统通知
-	successCount := stats.ProcessedFiles - stats.SkippedCount - stats.FailedCount
-	notification := &Notification{
-		Title:   "Media Organizer - 处理完成",
-		Message: fmt.Sprintf("成功处理 %d 个文件", successCount),
-		Sound:   true,
-	}
-	
-	if err := sendNotification(notification); err != nil {
-		s.addLog(fmt.Sprintf("⚠️  发送通知失败: %v", err))
-	}
-	
-	s.showCompletionDialog()
+		
+		// 发送系统通知（在后台发送，不阻塞 UI）
+		go func() {
+			successCount := stats.ProcessedFiles - stats.SkippedCount - stats.FailedCount
+			notification := &Notification{
+				Title:   "Media Organizer - 处理完成",
+				Message: fmt.Sprintf("成功处理 %d 个文件", successCount),
+				Sound:   true,
+			}
+			
+			if err := sendNotification(notification); err != nil {
+				fyne.Do(func() {
+					s.addLogUnsafe(fmt.Sprintf("⚠️  发送通知失败: %v", err))
+				})
+			}
+		}()
+		
+		s.showCompletionDialog()
+	})
 }
 
 // OnError 发生错误时调用
 func (s *ProgressScreen) OnError(err error) {
-	s.addLog(fmt.Sprintf("❌ 错误: %v", err))
-	
-	// 发送错误通知
-	notification := &Notification{
-		Title:   "Media Organizer - 处理错误",
-		Message: fmt.Sprintf("错误: %v", err),
-		Sound:   true,
-	}
-	
-	if notifyErr := sendNotification(notification); notifyErr != nil {
-		s.addLog(fmt.Sprintf("⚠️  发送通知失败: %v", notifyErr))
-	}
-	
-	dialog.ShowError(err, s.app.Window())
+	fyne.Do(func() {
+		s.addLogUnsafe(fmt.Sprintf("❌ 错误: %v", err))
+		
+		// 发送错误通知（在后台发送，不阻塞 UI）
+		go func() {
+			notification := &Notification{
+				Title:   "Media Organizer - 处理错误",
+				Message: fmt.Sprintf("错误: %v", err),
+				Sound:   true,
+			}
+			
+			if notifyErr := sendNotification(notification); notifyErr != nil {
+				fyne.Do(func() {
+					s.addLogUnsafe(fmt.Sprintf("⚠️  发送通知失败: %v", notifyErr))
+				})
+			}
+		}()
+		
+		dialog.ShowError(err, s.app.Window())
+	})
 }
 
 // Helper methods
 
-// addLog 添加日志条目
-func (s *ProgressScreen) addLog(message string) {
+// addLogUnsafe 添加日志条目（必须在 fyne.Do 中调用）
+func (s *ProgressScreen) addLogUnsafe(message string) {
 	timestamp := time.Now().Format("15:04:05")
 	logLine := fmt.Sprintf("[%s] %s", timestamp, message)
 	
@@ -267,8 +284,8 @@ func (s *ProgressScreen) addLog(message string) {
 	s.logEntry.SetText(logText)
 }
 
-// updateStats 更新统计信息显示
-func (s *ProgressScreen) updateStats() {
+// updateStatsUnsafe 更新统计信息显示（必须在 fyne.Do 中调用）
+func (s *ProgressScreen) updateStatsUnsafe() {
 	if s.stats == nil {
 		return
 	}
@@ -314,11 +331,11 @@ func (s *ProgressScreen) onPause() {
 	if s.processManager.IsPaused() {
 		s.processManager.Resume()
 		s.pauseButton.SetText("暂停")
-		s.addLog("继续处理...")
+		s.addLogUnsafe("继续处理...")
 	} else {
 		s.processManager.Pause()
 		s.pauseButton.SetText("继续")
-		s.addLog("已暂停")
+		s.addLogUnsafe("已暂停")
 	}
 }
 
@@ -333,7 +350,7 @@ func (s *ProgressScreen) onCancel() {
 					s.processManager.Stop()
 				}
 				s.isCancelled = true
-				s.addLog("已取消处理")
+				s.addLogUnsafe("已取消处理")
 				time.Sleep(500 * time.Millisecond)
 				s.app.NavigateTo(0) // Go back to config screen
 			}
