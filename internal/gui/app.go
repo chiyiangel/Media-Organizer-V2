@@ -22,6 +22,9 @@ type App struct {
 	sidebar   *widget.List
 	content   *fyne.Container
 	currentScreen screens.Screen
+	
+	// State
+	shouldStartProcessing bool // 是否应该启动处理
 }
 
 // NewApp creates a new GUI application
@@ -200,4 +203,19 @@ func (a *App) Window() fyne.Window {
 // NavigateTo switches to a different screen (exported for screens package)
 func (a *App) NavigateTo(screenID widget.ListItemID) {
 	a.navigateTo(screenID)
+}
+
+// StartProcessing 设置启动处理标志并切换到进度页面
+func (a *App) StartProcessing() {
+	a.shouldStartProcessing = true
+	a.navigateTo(1) // 切换到进度页面
+}
+
+// ShouldStartProcessing 检查是否应该启动处理（并重置标志）
+func (a *App) ShouldStartProcessing() bool {
+	if a.shouldStartProcessing {
+		a.shouldStartProcessing = false
+		return true
+	}
+	return false
 }

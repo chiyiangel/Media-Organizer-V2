@@ -17,6 +17,7 @@ type AppInterface interface {
 	History() *history.Manager
 	Window() fyne.Window
 	NavigateTo(id widget.ListItemID)
+	StartProcessing() // 启动处理（设置 shouldStart 标志并切换到进度页面）
 }
 
 // ConfigScreen represents the configuration screen
@@ -236,8 +237,8 @@ func (s *ConfigScreen) onStart() {
 	// Save current configuration
 	s.OnHide()
 	
-	// Switch to progress screen
-	s.app.NavigateTo(1)
+	// 启动处理并切换到进度页面
+	s.app.StartProcessing()
 }
 
 // onImportConfig handles the import config button click

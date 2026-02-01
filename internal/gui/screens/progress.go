@@ -147,10 +147,35 @@ func (s *ProgressScreen) Content() fyne.CanvasObject {
 
 // OnShow is called when the screen is shown
 func (s *ProgressScreen) OnShow() {
+	// 检查是否应该启动处理（通过类型断言获取 App 的方法）
+	shouldStart := false
+	if appWithStart, ok := s.app.(interface{ ShouldStartProcessing() bool }); ok {
+		shouldStart = appWithStart.ShouldStartProcessing()
+	}
+	
+	if !shouldStart {
+		// 显示等待状态
+		s.currentFileLabel.SetText("请从配置页面点击「开始整理」")
+		s.targetPathLabel.SetText("")
+		s.progressBar.SetValue(0)
+		s.progressLabel.SetText("0%")
+		s.statsLabel.ParseMarkdown("**状态:** 等待开始")
+		s.logEntry.SetText("")
+		return
+	}
+	
 	s.startTime = time.Now()
 	s.isPaused = false
 	s.isCancelled = false
 	s.logBuffer = make([]string, 0, s.maxLogLines)
+	
+	// 重置 UI
+	s.currentFileLabel.SetText("正在扫描文件...")
+	s.targetPathLabel.SetText("")
+	s.progressBar.SetValue(0)
+	s.progressLabel.SetText("0%")
+	s.statsLabel.ParseMarkdown("**状态:** 正在初始化...")
+	s.logEntry.SetText("")
 	
 	// 创建处理器
 	cfg := s.app.Config()
@@ -161,7 +186,9 @@ func (s *ProgressScreen) OnShow() {
 	// 启动处理
 	go func() {
 		if err := s.processManager.Start(); err != nil {
-			dialog.ShowError(err, s.app.Window())
+			fyne.Do(func() {
+				dialog.ShowError(err, s.app.Window())
+			})
 		}
 	}()
 }
