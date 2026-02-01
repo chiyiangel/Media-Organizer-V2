@@ -1,0 +1,7 @@
+{
+  "duplicate_detection": "filename",
+  "duplicate_strategy": "skip",
+  "log_level": "info",
+  "source_dir": "",
+  "target_dir": ""
+}

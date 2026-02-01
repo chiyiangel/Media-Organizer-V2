@@ -122,8 +122,13 @@ func LoadFullConfig(cliConfig *Config) (*Config, error) {
 		// Try to find config file automatically
 		configFile, err = FindConfigFile()
 		if err != nil {
-			// No config file found, that's okay
-			fileConfig = nil
+			// No config file found, create default one in executable directory
+			configFile, err = createDefaultConfigFile()
+			if err != nil {
+				// Failed to create config file, continue without it
+				configFile = ""
+				fileConfig = nil
+			}
 		}
 	}
 
@@ -144,4 +149,41 @@ func LoadFullConfig(cliConfig *Config) (*Config, error) {
 	}
 
 	return finalConfig, nil
+}
+
+// getExecutableDir returns the directory of the current executable
+func getExecutableDir() (string, error) {
+	exePath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Dir(exePath), nil
+}
+
+// createDefaultConfigFile creates a default config file in the executable directory
+func createDefaultConfigFile() (string, error) {
+	// Get executable directory
+	exeDir, err := getExecutableDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get executable directory: %w", err)
+	}
+
+	// Default config file path
+	configPath := filepath.Join(exeDir, "config.json")
+
+	// Check if file already exists
+	if _, err := os.Stat(configPath); err == nil {
+		// File exists, return its path
+		return configPath, nil
+	}
+
+	// Create default configuration
+	defaultConfig := NewDefaultConfig()
+
+	// Write to file
+	if err := ExportConfig(defaultConfig, configPath); err != nil {
+		return "", fmt.Errorf("failed to create default config file: %w", err)
+	}
+
+	return configPath, nil
 }
